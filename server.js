@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const helmet = require('helmet');
 
 const Database = [
   1,1,1,1,
@@ -59,6 +60,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 app.use(cors());
 app.use(express.json()); 
+app.use(helmet)
 app.use(morgan('tiny'))
 // tiny - 간단, combined - 좀 더 자세한 로그
 
@@ -70,13 +72,28 @@ app.get('/', (req, res) => {
   })
   res.send('it is working')} )
 
-app.put('/giveCard', (req, res) => {
-  const playerHand = []
+
+
+app.put('/start', (req, res) => {
+  // 패의 order 숫자로 구성된 136길이의 큐를 섞어
+  // 두명의 플레이어에게 각각 14개씩 줌
+  // 프론트엔드는 order를 받고 저장되어있는 카드 데이터를 참고하여 패를 구성
+  // (state.switchHand.cards)
+
+  const playerHand1 = []
   for (var i=0; i < 14; i++) {
-    playerHand.push(mountain.pop())
+    playerHand1.push(mountain.pop())
   }
-  res.json(playerHand)
+
+  const playerHand2 = []
+  for (var i=0; i < 14; i++) {
+    playerHand2.push(mountain.pop())
+  }
+
+  res.json(playerHand1)
 })
+
+
 
 app.post('/submit', (req, res) => {
   const { submited } = req.body;
@@ -84,20 +101,20 @@ app.post('/submit', (req, res) => {
 })
 
 app.post('/discard', (req, res) => {
-  const { discard } = req.body;
-  console.log(discard)
-  if (discard.order === 36) {
-    res.status(200).json({
-      ...discard,
-      ron: true,
-      score: 16000
-    })
+  const discard = req.body
+  console.log(discard.card.order)
+  if (discard.card.order === 36 | 35 | 34) {
+    discard.card.ron = true
+    discard.card.score = 16000
+    res.status(200).json(
+      discard
+    )
   } else {
-    res.status(200).json({
-      ...discard,
-      ron: false,
-      score: false
-    })
+    discard.card.ron = false
+    discard.card.score = 0
+    res.status(200).json(
+      discard
+    )
   }
 })
 
