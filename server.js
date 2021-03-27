@@ -3,6 +3,21 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 
+const app = express();
+const server = require('http').createServer(app);
+const io = require('socket.io')(server,{
+  cors: {
+    origin: '*',
+  }
+});
+
+app.use(cors());
+app.use(express.json()); 
+app.use(helmet())
+app.use(morgan('tiny'))
+// tiny - 간단, combined - 좀 더 자세한 로그
+
+
 const Database = [
   1,1,1,1,
   2,2,2,2,
@@ -39,7 +54,6 @@ const Database = [
   35,35,35,35,
   36,36,36,36
 ]
-
 const shuffle = (array) => {
   var currentIndex = array.length, temporaryValue, randomIndex;
   while (0 !== currentIndex) {
@@ -52,17 +66,12 @@ const shuffle = (array) => {
   return array;
 }
 
-const mountain = shuffle(Database)
 
-const app = express();
+
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; 
 
-app.use(cors());
-app.use(express.json()); 
-app.use(helmet)
-app.use(morgan('tiny'))
-// tiny - 간단, combined - 좀 더 자세한 로그
+
 
 app.get('/', (req, res) => {
   res.cookie('session', '1', { httpOnly: true })
@@ -79,18 +88,23 @@ app.put('/start', (req, res) => {
   // 두명의 플레이어에게 각각 14개씩 줌
   // 프론트엔드는 order를 받고 저장되어있는 카드 데이터를 참고하여 패를 구성
   // (state.switchHand.cards)
-
+  const mountain = shuffle(Database)
+  const dora = mountain.pop()
+  const uraDora = mountain.pop()
   const playerHand1 = []
-  for (var i=0; i < 14; i++) {
+  for (var i=0; i < 34; i++) {
     playerHand1.push(mountain.pop())
   }
 
   const playerHand2 = []
-  for (var i=0; i < 14; i++) {
+  for (var i=0; i < 34; i++) {
     playerHand2.push(mountain.pop())
   }
 
-  res.json(playerHand1)
+  res.json({
+    playerHand: playerHand1,
+    dora: dora
+  })
 })
 
 
@@ -123,6 +137,16 @@ app.post('/ron', (req, res) => {
   const final = submited + ronCard
 })
 
-app.listen(3001, () => {
+
+io.on('connection', (socket) => {
+  socket.on('message', (message) => {
+    console.log('you sent' + message)
+    socket.send(`Hello you sent ${message}`)
+  })
+
+  
+})
+
+server.listen(3001, () => {
   console.log('it is running on port 3001')
 })
