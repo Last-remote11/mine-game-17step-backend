@@ -73,13 +73,13 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 
 
-app.get('/', (req, res) => {
-  res.cookie('session', '1', { httpOnly: true })
-  res.cookie('session', '1', { secure: true })
-  res.set({
-    'Content-Security-Policy': "script-src 'self' 'https://apis.google.com'"
-  })
-  res.send('it is working')} )
+// app.get('/', (req, res) => {
+//   res.cookie('session', '1', { httpOnly: true })
+//   res.cookie('session', '1', { secure: true })
+//   res.set({
+//     'Content-Security-Policy': "script-src 'self' 'https://apis.google.com'"
+//   })
+//   res.send('it is working')} )
 
 
 
@@ -139,13 +139,34 @@ app.post('/ron', (req, res) => {
 
 
 io.on('connection', (socket) => {
-  socket.on('message', (message) => {
-    console.log('you sent' + message)
-    socket.send(`Hello you sent ${message}`)
+  console.log(socket.id, '소켓아이디')
+
+  socket.on('login', (data) => {
+    
+    socket.name = data.name
+    socket.id = data.id
+
+    console.log(data)
+    io.emit('login', 'Login Success !')
   })
 
-  
-})
+  socket.on('forceDisconnect', function() {
+    socket.disconnect();
+    socket.emit('forceDisconnect', 'disconnected')
+  })
+
+  socket.on('discard', (data) => {
+    socket.discard = data
+    io.emit('discard', socket.discard)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected: ' + socket.name);
+  });
+
+})  
+
+
 
 server.listen(3001, () => {
   console.log('it is running on port 3001')
