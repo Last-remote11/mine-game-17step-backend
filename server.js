@@ -14,7 +14,7 @@ const io = require('socket.io')(server,{
 app.use(cors());
 app.use(express.json()); 
 app.use(helmet())
-app.use(morgan('tiny'))
+app.use(morgan('combined'))
 // tiny - 간단, combined - 좀 더 자세한 로그
 
 
@@ -140,24 +140,65 @@ app.post('/ron', (req, res) => {
 
 io.on('connection', (socket) => {
   console.log(socket.id, '소켓아이디')
+  socket.emit('connection', socket.id)
 
   socket.on('login', (data) => {
+
+    const mountain = shuffle(Database)
+    const dora = mountain.pop()
+    const uraDora = mountain.pop()
+    const playerHand1 = []
+    for (var i=0; i < 34; i++) {
+      playerHand1.push(mountain.pop())
+    }
+  
+    const playerHand2 = []
+    for (var i=0; i < 34; i++) {
+      playerHand2.push(mountain.pop())
+    }
     
     socket.name = data.name
-    socket.id = data.id
+
+    console.log({
+      playerHand: playerHand1,
+      dora: dora
+    })
 
     console.log(data)
-    io.emit('login', 'Login Success !')
+    io.emit('login', {
+      playerHand: playerHand1,
+      dora: dora
+    })
   })
 
-  socket.on('forceDisconnect', function() {
+  socket.on('forceDisconnect', () => {
     socket.disconnect();
     socket.emit('forceDisconnect', 'disconnected')
   })
 
+  socket.on('decide', (data) => {
+    console.log('emit decide')
+    socket.broadcast.emit('opponentDecide', data)
+  })
+
   socket.on('discard', (data) => {
-    socket.discard = data
-    io.emit('discard', socket.discard)
+    console.log('on discard')
+    socket.broadcast.emit('opponentDiscard', data);
+
+    console.log(data.order)
+    if (data.order === 36 | 35 | 34) {
+      socket.ron = true
+      socket.score = 16000
+      socket.emit('ron', socket.ron)
+    } else {
+      socket.ron = false
+      socket.ron = 0
+      socket.emit('ron', socket.ron)
+    }
+  })
+
+  socket.on('itsMyTurn', (data) => {
+    socket.emit('itsMyTurn', true)
   })
 
   socket.on('disconnect', () => {
