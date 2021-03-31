@@ -139,14 +139,23 @@ app.post('/ron', (req, res) => {
 
 
 io.on('connection', (socket) => {
-  console.log(socket.id, '소켓아이디')
+  console.log(socket.id, ' 연결됨')
   socket.emit('connection', socket.id)
 
+  // switch (number) {
+  //   case 1: socket.to(socket.id).emit('oneUser')
+  //   case 2: io.to(socket.id).emit('twoUser')
+  //   case 3:
+  //     socket.emit('fullUser') 
+  //     socket.disconnect()
+  // }
+  
   socket.on('login', (data) => {
-
+    console.log(io.sockets.adapter.rooms.get(sosket.id).size)
     const mountain = shuffle(Database)
     const dora = mountain.pop()
     const uraDora = mountain.pop()
+
     const playerHand1 = []
     for (var i=0; i < 34; i++) {
       playerHand1.push(mountain.pop())
@@ -159,16 +168,36 @@ io.on('connection', (socket) => {
     
     socket.name = data.name
 
-    console.log({
+    socket.emit('login', {
       playerHand: playerHand1,
-      dora: dora
+      dora: dora,
+      myTurn: true
     })
 
-    console.log(data)
-    io.emit('login', {
-      playerHand: playerHand1,
-      dora: dora
+    socket.broadcast.emit('login',{
+      playerHand: playerHand2,
+      dora: dora,
+      myTurn: false
     })
+  })
+
+
+
+  socket.on('create', (roomID) => {
+    socket.join(roomID)
+  })
+
+  socket.on('join', (roomID) => {
+    socket.join(roomID)
+    let number = io.sockets.adapter.rooms.get(roomID).size
+    console.log('방ID : ', roomID, number)
+    if (number === 2) {
+      io.to(roomID).emit('twoUser', 'twoUser')
+    }
+    if (number === 3) {
+      socket.emit('fullRoom', 'fullRoom')
+      socket.disconnect()
+    }
   })
 
   socket.on('forceDisconnect', () => {
@@ -202,11 +231,10 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    console.log('user disconnected: ' + socket.name);
+    console.log('user disconnected: ' + socket.id);
   });
 
 })  
-
 
 
 server.listen(3001, () => {
