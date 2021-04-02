@@ -82,65 +82,10 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 //   res.send('it is working')} )
 
 
-
-app.put('/start', (req, res) => {
-  // 패의 order 숫자로 구성된 136길이의 큐를 섞어
-  // 두명의 플레이어에게 각각 14개씩 줌
-  // 프론트엔드는 order를 받고 저장되어있는 카드 데이터를 참고하여 패를 구성
-  // (state.switchHand.cards)
-  const mountain = shuffle(Database)
-  const dora = mountain.pop()
-  const uraDora = mountain.pop()
-  const playerHand1 = []
-  for (var i=0; i < 34; i++) {
-    playerHand1.push(mountain.pop())
-  }
-
-  const playerHand2 = []
-  for (var i=0; i < 34; i++) {
-    playerHand2.push(mountain.pop())
-  }
-
-  res.json({
-    playerHand: playerHand1,
-    dora: dora
-  })
-})
-
-
-
-app.post('/submit', (req, res) => {
-  const { submited } = req.body;
-  res.status(200).json('정상제출')
-})
-
-app.post('/discard', (req, res) => {
-  const discard = req.body
-  console.log(discard.card.order)
-  if (discard.card.order === 36 | 35 | 34) {
-    discard.card.ron = true
-    discard.card.score = 16000
-    res.status(200).json(
-      discard
-    )
-  } else {
-    discard.card.ron = false
-    discard.card.score = 0
-    res.status(200).json(
-      discard
-    )
-  }
-})
-
-app.post('/ron', (req, res) => {
-  const { ronCard } = req.body;
-  const final = submited + ronCard
-})
-
-
 io.on('connection', (socket) => {
+  socket.removeAllListeners
   console.log(socket.id, ' 연결됨')
-  socket.emit('connection', socket.id)
+  socket.emit('connected', socket.id)
 
   // switch (number) {
   //   case 1: socket.to(socket.id).emit('oneUser')
@@ -150,55 +95,53 @@ io.on('connection', (socket) => {
   //     socket.disconnect()
   // }
   
-  socket.on('login', (data) => {
-    console.log(io.sockets.adapter.rooms.get(sosket.id).size)
-    const mountain = shuffle(Database)
-    const dora = mountain.pop()
-    const uraDora = mountain.pop()
-
-    const playerHand1 = []
-    for (var i=0; i < 34; i++) {
-      playerHand1.push(mountain.pop())
-    }
-  
-    const playerHand2 = []
-    for (var i=0; i < 34; i++) {
-      playerHand2.push(mountain.pop())
-    }
-    
-    socket.name = data.name
-
-    socket.emit('login', {
-      playerHand: playerHand1,
-      dora: dora,
-      myTurn: true
-    })
-
-    socket.broadcast.emit('login',{
-      playerHand: playerHand2,
-      dora: dora,
-      myTurn: false
-    })
-  })
-
-
-
-  socket.on('create', (roomID) => {
-    socket.join(roomID)
-  })
-
-  socket.on('join', (roomID) => {
+  socket.on('joinroom', (roomID) => {
     socket.join(roomID)
     let number = io.sockets.adapter.rooms.get(roomID).size
     console.log('방ID : ', roomID, number)
     if (number === 2) {
-      io.to(roomID).emit('twoUser', 'twoUser')
+      io.in(roomID).emit('twoUser')
+      console.log('emit TWOROOM')
     }
     if (number === 3) {
       socket.emit('fullRoom', 'fullRoom')
       socket.disconnect()
     }
   })
+
+
+  socket.on('login', (data) => {
+    console.log('login', socket.rooms)
+    const mountain = shuffle(Database)
+      const dora = mountain.pop()
+      const uraDora = mountain.pop()
+    
+      const playerHand1 = []
+      for (var i=0; i < 34; i++) {
+        playerHand1.push(mountain.pop())
+      }
+    
+      const playerHand2 = []
+      for (var i=0; i < 34; i++) {
+        playerHand2.push(mountain.pop())
+      }
+      
+      socket.name = data.name
+    
+      socket.emit('login', {
+        playerHand: playerHand1,
+        dora: dora,
+        myTurn: true
+      })
+    
+      socket.broadcast.emit('login',{
+        playerHand: playerHand2,
+        dora: dora,
+        myTurn: false
+      })
+  })
+
+  
 
   socket.on('forceDisconnect', () => {
     socket.disconnect();
@@ -235,6 +178,8 @@ io.on('connection', (socket) => {
   });
 
 })  
+
+
 
 
 server.listen(3001, () => {
