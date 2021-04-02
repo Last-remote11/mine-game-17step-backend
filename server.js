@@ -96,9 +96,14 @@ io.on('connection', (socket) => {
   // }
   
   socket.on('joinroom', (roomID) => {
+    roomID = parseInt(roomID)
     socket.join(roomID)
     let number = io.sockets.adapter.rooms.get(roomID).size
     console.log('방ID : ', roomID, number)
+    if (number === 1) {
+      io.in(roomID).emit('oneUser')
+      console.log('emit ONEUSER')
+    }
     if (number === 2) {
       io.in(roomID).emit('twoUser')
       console.log('emit TWOROOM')
@@ -112,7 +117,7 @@ io.on('connection', (socket) => {
 
   socket.on('login', (data) => {
     console.log('login', socket.rooms)
-    const mountain = shuffle(Database)
+    const mountain = shuffle([...Database])
       const dora = mountain.pop()
       const uraDora = mountain.pop()
     
@@ -154,19 +159,15 @@ io.on('connection', (socket) => {
   })
 
   socket.on('discard', (data) => {
-    console.log('on discard')
+    console.log('on discard', data)
     socket.broadcast.emit('opponentDiscard', data);
 
     console.log(data.order)
-    if (data.order === 36 | 35 | 34) {
-      socket.ron = true
-      socket.score = 16000
-      socket.emit('ron', socket.ron)
-    } else {
-      socket.ron = false
-      socket.ron = 0
-      socket.emit('ron', socket.ron)
-    }
+  })
+
+  socket.on('ron', (data) => {
+    console.log(data)
+    // 패 확인, 점수분배, 패산초기화
   })
 
   socket.on('itsMyTurn', (data) => {
