@@ -145,7 +145,6 @@ io.on('connection', (socket) => {
         myTurn: false
       })
   })
-
   
 
   socket.on('forceDisconnect', () => {
@@ -179,8 +178,6 @@ io.on('connection', (socket) => {
   });
 
 })  
-
-
 
 
 server.listen(3001, () => {
