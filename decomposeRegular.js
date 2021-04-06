@@ -72,11 +72,6 @@ const decomposeRegular = (tiles) => {
       heads.push(head)
     }
   }
-
-  // console.log('chis: ', chis,' pons: ',pons, ' tiles:', tiles)
-  
-
-  
   
   if (tiles.length === 0 ) {
     return { heads, chis, pons }
@@ -85,7 +80,4 @@ const decomposeRegular = (tiles) => {
   }
 }
 
-const { heads, chis, pons } = decomposeRegular([1,1,2,2,3,3, 25, 25, 26, 26, 27,27, 36,36 ])
-
-// const [ heads, bodies ] = beginPon([23,23,36,36,36])
-console.log('head: ', heads, 'chis: ', chis,' pons: ',pons)
+module.exports = { decomposeRegular }

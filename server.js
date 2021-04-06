@@ -3,6 +3,9 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 
+const { checkYaku } = require('./CheckYaku')
+const { calculatePoint } = require('./CalculatePoint')
+
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server,{
@@ -67,7 +70,7 @@ const shuffle = (array) => {
 }
 
 
-
+console.log(checkYaku([1,1,1,2,3,4,5,6,7,8,9,9,9,9]))
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; 
 
@@ -166,6 +169,12 @@ io.on('connection', (socket) => {
 
   socket.on('ron', (data) => {
     console.log(data)
+    const { trueCards, ronCards } = data
+    const tiles = trueCards
+    const { fu, pan, yakuman, yakuNameArr } = checkYaku(tiles, ronCards)
+    const point = calculatePoint(fu, pan, yakuman)
+    socket.broadcast.emit('lose', { point, yakuNameArr })
+    socket.emit('win', { point, yakuNameArr })
     // 패 확인, 점수분배, 패산초기화
   })
 
