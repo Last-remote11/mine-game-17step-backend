@@ -361,7 +361,7 @@ const checkDora = (tiles, dora, uradora) => {
       uradoraCount++;
     }
   }
-  console.log('dora',dora,'doracount',doraCount,'uradoraCount',uradoraCount)
+  console.log('tiles', tiles,'dora',dora,'doracount',doraCount,'uradoraCount',uradoraCount)
   return { doraCount, uradoraCount }
   }
 

@@ -49,9 +49,9 @@ test('핑후 탕야오 이페코 도라1 삼색동순', () => {
 test('소사희', () => {
   expect(checkYaku([1,2,3,31,31,32,32,32,33,33,33,34,34,34], 34, 32, 17))
   .toStrictEqual({ 
-    pan: 0, 
+    pan: 5, 
     fu: 0,
     yakuman: 1, 
-    yakuNameArr: ['소사희', '혼일색'], 
+    yakuNameArr: ['소사희'], 
     uradoraCount: 0 })
 })
