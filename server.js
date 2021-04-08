@@ -84,19 +84,13 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 //   })
 //   res.send('it is working')} )
 
+var roomIDDoraMapper = {};
+var roomIDUraDoraMapper = {};
 
 io.on('connection', (socket) => {
   socket.removeAllListeners
   console.log(socket.id, ' 연결됨')
   socket.emit('connected', socket.id)
-
-  // switch (number) {
-  //   case 1: socket.to(socket.id).emit('oneUser')
-  //   case 2: io.to(socket.id).emit('twoUser')
-  //   case 3:
-  //     socket.emit('fullUser') 
-  //     socket.disconnect()
-  // }
   
   socket.on('joinroom', (roomID) => {
     roomID = parseInt(roomID)
@@ -120,33 +114,37 @@ io.on('connection', (socket) => {
 
   socket.on('login', (data) => {
     console.log('login', socket.rooms)
+    var roomIDArr = [...socket.rooms]
+    var roomID = roomIDArr[roomIDArr.length-1]
     const mountain = shuffle([...Database])
-      const dora = mountain.pop()
-      const uraDora = mountain.pop()
+    const dora = mountain.pop()
+    const uraDora = mountain.pop()
+    roomIDDoraMapper[roomID] = dora
+    roomIDUraDoraMapper[roomID] = uraDora
+  
+    const playerHand1 = []
+    for (var i=0; i < 34; i++) {
+      playerHand1.push(mountain.pop())
+    }
+  
+    const playerHand2 = []
+    for (var i=0; i < 34; i++) {
+      playerHand2.push(mountain.pop())
+    }
     
-      const playerHand1 = []
-      for (var i=0; i < 34; i++) {
-        playerHand1.push(mountain.pop())
-      }
-    
-      const playerHand2 = []
-      for (var i=0; i < 34; i++) {
-        playerHand2.push(mountain.pop())
-      }
-      
-      socket.name = data.name
-    
-      socket.emit('login', {
-        playerHand: playerHand1,
-        dora: dora,
-        myTurn: true
-      })
-    
-      socket.broadcast.emit('login',{
-        playerHand: playerHand2,
-        dora: dora,
-        myTurn: false
-      })
+    socket.name = data.name
+  
+    socket.emit('login', {
+      playerHand: playerHand1,
+      dora: dora,
+      myTurn: true
+    })
+  
+    socket.broadcast.emit('login',{
+      playerHand: playerHand2,
+      dora: dora,
+      myTurn: false
+    })
   })
   
 
@@ -169,13 +167,28 @@ io.on('connection', (socket) => {
 
   socket.on('ron', (data) => {
     console.log(data)
-    const { trueCards, ronCards } = data
-    const tiles = trueCards
-    const { fu, pan, yakuman, yakuNameArr } = checkYaku(tiles, ronCards)
-    const point = calculatePoint(fu, pan, yakuman)
+    var roomIDArr = [...socket.rooms]
+    var roomID = roomIDArr[roomIDArr.length-1]
+    console.log(roomID)
+    var dora = roomIDDoraMapper[roomID]
+    var uraDora = roomIDUraDoraMapper[roomID]
+    const { tiles, ronCards } = data
+    const { 
+      pan, 
+      fu, 
+      yakuman, 
+      yakuNameArr, 
+      uradoraCount } = checkYaku(tiles, ronCards, dora, uraDora)
+      // 도라, 뒷도라 모두 카운트하지만 판수에 반영하는건 도라만
+      // 뒷도라 제외 만관이어야 하기 때문
+    const point = calculatePoint(fu, pan, yakuman, yakuNameArr, uradoraCount)
+      // 만관 조건 체크(뒷도라제외), 점수계산(뒷도라포함)
+    if (point != 8000) {
+      yakuNameArr.push(`우라도라 ${uradoraCount}`)
+    } // 뒷도라제외 만관이상이면 역목록에추가
+
     socket.broadcast.emit('lose', { point, yakuNameArr })
     socket.emit('win', { point, yakuNameArr })
-    // 패 확인, 점수분배, 패산초기화
   })
 
   socket.on('itsMyTurn', (data) => {

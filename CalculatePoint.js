@@ -1,6 +1,12 @@
 const BASE_POINTS = [0, 8000, 12000, 16000, 24000, 32000, 64000]
 
-const calculatePoint = ( pan, fu, yakuman ) => {
+const calculatePoint = ( pan, fu, yakuman, uradoraCount ) => {
+  if (pan < 4 && yakuman === 0 ) { // 우라도라제외 만관이하
+    return -8000
+  } else {
+    pan += uradoraCount
+  }
+
   if (yakuman != 0) {
     return yakuman * 32000
   }

@@ -1,7 +1,7 @@
 // [1, 2, 3, 11, 12, 13, 21, 22, 23, 30, 30, 31, 31]
 // 1~9 만 11~19 통 21~29 삭 31~34 풍 35 36 37 백발중
 
-const decomposeRegular = require('./decomposeRegular.js')
+const { decomposeRegular } = require('./decomposeRegular')
 
 const SU = []
 
@@ -99,6 +99,13 @@ const chuuren = (tiles, ronCard) => { // tiles는 14개의 완전한 패다?
 }
 
 const chitoitsu = (tiles) => {
+
+  let tileNumbers = tiles.map(element => parseInt(element / 10))
+  let setOfTilesArr = [...new Set(tiles)]
+
+  let tileNumbersArr = [...new Set(tileNumbers)] // 그림종류
+
+
   for (var i = 0; i < 7; i++) { // 치또이츠
     if (tiles[i*2] === tiles[i*2 + 1]) {
       continue
@@ -106,6 +113,37 @@ const chitoitsu = (tiles) => {
       return null
     }
   }
+
+  if (setOfTilesArr.length !== 7) { // 깡 X
+    return null
+  }
+
+  if (
+    tileNumbersArr.length === 2 &&
+    tileNumbersArr.includes(3)) {
+      if (setOfTilesArr.every(e => ROYAL.includes(e))) {
+        return 'chitoitsu_honitsu_chanta'
+      }
+      return 'chitoitsu_honitsu'
+    }
+  
+  if (tileNumbersArr.length === 1) {
+    if (tileNumbersArr.includes(3)) {
+      return '7star'
+    }
+    if (!setOfTilesArr.some(e => ROYAL.includes(e))) {
+      return 'grandWheel'
+    }
+    return 'chitoitsu_chinitsu'
+  }
+
+  if (setOfTilesArr.every(e => ROYAL.includes(e))) {
+    return 'chitoitsu_chanta'
+  }
+  if (!setOfTilesArr.some(e => ROYAL.includes(e))) {
+    return 'chitoitsu_tanyao'
+  }
+
   return 'chitoitsu'
 }
 
@@ -313,16 +351,18 @@ const checkDora = (tiles, dora, uradora) => {
   dora === 35 ? dora = 31 : true
   dora === 38 ? dora = 35 : true
 
-  let count = 0;
-  for(var i = 0; i < tiles.length; ++i){
-    if (tiles[i] == dora) {
-      count++;
+  let doraCount = 0;
+  let uradoraCount = 0
+  for(var i = 0; i < tiles.length; i++){
+    if (tiles[i] === dora) {
+      doraCount++;
     }
-    if (tiles[i] == uradora) {
-      count++;
+    if (tiles[i] === uradora) {
+      uradoraCount++;
     }
   }
-  return count
+  console.log('dora',dora,'doracount',doraCount,'uradoraCount',uradoraCount)
+  return { doraCount, uradoraCount }
   }
 
 
@@ -331,40 +371,87 @@ const checkDora = (tiles, dora, uradora) => {
 // ***********************************************************
 // ***********************************************************
 
-const checkYaku = ( tiles, dora, uradora ) => {
+const checkYaku = ( tiles, ronCard, dora, uradora ) => { 
+  // tiles는 14개의 배열을 받음
+  // 역만이 하나라도 있으면 도라, 뒷도라 카운트 안함(그냥 0으로 반환)
 
-  const ronCard = tiles[tiles.length - 1] // 굉후, 쓰안커단기 등 확인용
   tiles.sort()
 
   let yakuNameArr = []
   let pan = 0
   let fu = 0
   let yakuman = 0
+  var uradoraCount = 0
 
   if (kokushi(tiles) === 'kokushi') { // 어차피 다른 역만과 중첩 불가(단일 역의 더블역만 X)
     yakuman++
     yakuNameArr.push('국사무쌍')
-    return { pan, fu, yakuman, yakuNameArr }
+    return { pan, fu, yakuman, yakuNameArr, uradoraCount }
   }
 
-  if (chitoitsu(tiles) === 'chitoitsu') {
-    pan += 2
-    yakuNameArr.push('치또이쯔(칠대자)')
+  switch (chitoitsu(tiles)) {
+    case 'chitoitsu':
+      pan += 2
+      yakuNameArr.push('치또이쯔(칠대자)')
+      break;
+    case 'chitoitsu_tanyao':
+      pan += 3
+      yakuNameArr.push('치또이쯔(칠대자)')
+      yakuNameArr.push('탕야오')
+      break;
+    case 'chitoitsu_honitsu':
+      pan += 5
+      yakuNameArr.push('치또이쯔(칠대자)')
+      yakuNameArr.push('혼일색')
+      break;
+    case 'chitoitsu_chanta' :
+      pan += 4
+      yakuNameArr.push('치또이쯔(칠대자)')
+      yakuNameArr.push('찬타(혼전대요구)')
+      break;
+    case 'chitoitsu_honitsu_chanta':
+      pan += 7
+      yakuNameArr.push('치또이쯔(칠대자)')
+      yakuNameArr.push('혼일색')
+      yakuNameArr.push('찬타(혼전대요구)')
+      break;
+    case 'cchitoitsu_chinitsu':
+      pan += 8
+      yakuNameArr.push('치또이쯔(칠대자)')
+      yakuNameArr.push('청일색')
+      break;
+    case '7star':
+      yakuman ++
+      yakuNameArr.push('대칠성')
+      break;
+    case 'grandWheel':
+      yakuman ++
+      yakuNameArr.push('대차륜')
+      break;
+    default:
+      true
   }
 
   if (chuuren(tiles) === 'chuuren') {
     yakuman++
     yakuNameArr.push('구련보등')
-    return { pan, fu, yakuman, yakuNameArr }
+    return { pan, fu, yakuman, yakuNameArr, uradoraCount }
   }
-
-  pan += checkDora(tiles, dora, uradora)
-  // 도라
 
   const { heads, chis, pons } = decomposeRegular(tiles)
 
   if (heads === 'cannot decompose') {
-    return { pan, fu, yakuman, yakuNameArr }
+    if (yakuman === 0 && pan === 0) {
+      return { pan, fu, yakuman, yakuNameArr, uradoraCount } // 역이없음?
+    }
+    if (yakuman === 0) {
+      var { doraCount, uradoraCount } = checkDora(tiles, dora, uradora)
+      if (doraCount >= 1) {
+        pan += doraCount
+        yakuNameArr.push(`도라 ${doraCount}`)
+      }
+    }
+    return { pan, fu, yakuman, yakuNameArr, uradoraCount }
   }
 
   if (pinfu(heads, chis, ronCard) === 'pingfu') {
@@ -392,12 +479,12 @@ const checkYaku = ( tiles, dora, uradora ) => {
     yakuNameArr.push('백')
   }
 
-  if (hatsu(pon) === 'hatsu') {
+  if (hatsu(pons) === 'hatsu') {
     pan += 1
     yakuNameArr.push('발')
   }
   
-  if (chun(pon) === 'chun') {
+  if (chun(pons) === 'chun') {
     pan += 1
     yakuNameArr.push('중')
   }
@@ -422,7 +509,7 @@ const checkYaku = ( tiles, dora, uradora ) => {
     yakuNameArr.push('준찬타(순전대요구)')
   }
 
-  if (honroto(pons) === 'honroto') {
+  if (honroto(heads, pons) === 'honroto') {
     pan += 2
     yakuNameArr.push('혼노두')
   }
@@ -431,36 +518,43 @@ const checkYaku = ( tiles, dora, uradora ) => {
     case 'honitsu':
       pan += 3
       yakuNameArr.push('혼일색')
+      break;
     case 'tsuuiiso':
       yakuman++
       yakuNameArr.push('자일색')
+      break;
     case 'chinitsu':
       pan += 6
       yakuNameArr.push('청일색')
+      break;
     default:
-      console.log('^.^')
+      true
   }
 
   switch (sananko_suuanko(heads, pons, ronCard)) {
     case 'suuanko':
       yakuman++
       yakuNameArr.push('쓰안커(사암각)')
+      break;
     case 'sananko':
       pan += 3
       yakuNameArr.push('산안커(삼암각)')
+      break;
     default:
-      console.log('^.^')
+      true
   }
   
   switch (shosangen_daisangen(heads, pons)) {
     case 'daisangen':
       yakuman++
       yakuNameArr.push('대삼원')
+      break;
     case 'shosangen':
       pan += 2
       yakuNameArr.push('소삼원')
+      break;
     default:
-      console.log('^.^')
+      true
   }
 
   if (itsuu(chis) === 'itsuu') {
@@ -471,25 +565,36 @@ const checkYaku = ( tiles, dora, uradora ) => {
   switch (suushi(heads, pons)) {
     case 'daisuushi':
       yakuman++
-      yakuNameArr.push('대사희')
+      yakuNameArr = ['대사희']
+      break;
     case 'suushi':
       yakuman++
-      yakuNameArr.push('소사희')
+      yakuNameArr = ['소사희']
+      break;
     default:
-      console.log('^.^')
+      true
   }
 
   if (chinroto(heads, pons) === 'chinroto') {
     yakuman++
-    yakuNameArr.push('청노두')
+    yakuNameArr = ['청노두']
   }
 
   if (ryuuiiso(heads, chis, pons) === 'ryuuiiso') {
     yakuman++
-    yakuNameArr.push('녹일색')
+    yakuNameArr = ['녹일색']
   }
 
-  return { pan, fu, yakuman, yakuNameArr }
+  if (yakuman === 0) {
+    var { doraCount, uradoraCount } = checkDora(tiles, dora, uradora)
+    if (doraCount >= 1) {
+      pan += doraCount
+      yakuNameArr.push(`도라 ${doraCount}`)
+    }
+  }
+
+
+  return { pan, fu, yakuman, yakuNameArr, uradoraCount }
 }
 
 module.exports = { checkYaku }

@@ -55,17 +55,20 @@ const decomposeRegular = (tiles) => {
   let pons = []
   let heads = []
   
-  for (var j = 0; j < 4; j++) {
+  for (var j = 0; j < 6; j++) {
     for (var i = 0; i < 4; i++) { // 4번 실행?
       var { chi, tiles } = beginChi(tiles)
       if (chi) {
         chis.push(chi)
       }
+    }
+    for (var k = 0; k < 4; k++) {
       var { pon, tiles } = beginPon(tiles)
       if (pon) {
         pons.push(pon)
       }
     }
+    
       
     var { head, tiles } = beginPair(tiles)
     if (head) {
@@ -81,3 +84,5 @@ const decomposeRegular = (tiles) => {
 }
 
 module.exports = { decomposeRegular }
+
+console.log(decomposeRegular([6,7,8,16,16,17,17,18,18,26,26,26,27,28]))

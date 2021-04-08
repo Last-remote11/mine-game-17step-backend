@@ -230,4 +230,58 @@ const chuuren = (tiles, ronCard) => {
   return null
 }
 
+const chitoitsu = (tiles) => {
 
+  let tileNumbers = tiles.map(element => parseInt(element / 10))
+  let setOfTilesArr = [...new Set(tiles)]
+
+  let tileNumbersArr = [...new Set(tileNumbers)] // 그림종류
+
+
+  for (var i = 0; i < 7; i++) { // 치또이츠
+    if (tiles[i*2] === tiles[i*2 + 1]) {
+      continue
+    } else {
+      return null
+    }
+  }
+
+  if (setOfTilesArr.length !== 7) { // 깡 X
+    return null
+  }
+
+
+  if (
+    tileNumbersArr.length === 2 &&
+    tileNumbersArr.includes(3)) {
+      if (setOfTilesArr.every(e => ROYAL.includes(e))) {
+        return 'chitoitsu_honitsu_chanta'
+      }
+      return 'chitoitsu_honitsu'
+    }
+  
+  if (tileNumbersArr.length === 1) {
+    if (tileNumbersArr.includes(3)) {
+      return '7star'
+    }
+    if (!setOfTilesArr.some(e => ROYAL.includes(e))) {
+      return 'grandWheel'
+    }
+    return 'chitoitsu_chinitsu'
+  }
+
+  if (setOfTilesArr.every(e => ROYAL.includes(e))) {
+    return 'chitoitsu_chanta'
+  }
+  
+  if (!setOfTilesArr.some(e => ROYAL.includes(e))) {
+    return 'chitoitsu_tanyao'
+  }
+
+
+  return 'chitoitsu'
+}
+
+console.log(chitoitsu([12,12,13,13,14,14,16,16,15,15,17,17,18,18]))
+
+module.exports = { chitoitsu }
