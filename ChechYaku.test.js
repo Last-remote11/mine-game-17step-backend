@@ -1,57 +1,44 @@
 const { checkYaku } = require('./CheckYaku')
-const { calculatePoint } = require('./CalculatePoint')
-const { chitoitsu } = require('./helloooo')
-const { decomposeRegular } = require('./decomposeRegular')
+// const { calculatePoint } = require('./CalculatePoint')
+// const { decomposeRegular } = require('./decomposeRegular')
+
+const pinfu = (heads, chis, ronCard) => {
+  var chisTail = chis.map(e => e+2)
+  // var chisNum = [...new Set (chis.map(e => e % 10))]
+
+  if ( // 변짱
+    chis.includes(1) && !chis.includes(3) && ronCard === 3 ||
+    chis.includes(7) && !chis.includes(5) && ronCard === 7 ||
+    chis.includes(11) && !chis.includes(13) && ronCard === 13 ||
+    chis.includes(17) && !chis.includes(15) && ronCard === 17 ||
+    chis.includes(21) && !chis.includes(23) && ronCard === 23 ||
+    chis.includes(27) && !chis.includes(25) && ronCard === 27
+  ) {
+    console.log('변짱')
+    return null
+  }
+  
+  var twoSide = chis.concat(chisTail) // 양면확인용
+  console.log('chis', chis, 'ronCard',ronCard,'양면', chis.concat(chisTail))
+  if (chis.length === 4 && twoSide.includes(ronCard)) {
+      // !chis.some((chi) => [ronCard].includes(chi+1)) && // 간짱
+      // heads[0] !== ronCard
+      // ||
+      // heads[0] === ronCard && 
+    return 'pinfu'
+  }
+  return null
+}
 
 
 
-
-test('치또이쯔 도라2 우라도라2 4판(6판)', () => {
-  expect(checkYaku([1,1,2,2,13,13,14,14,16,16,17,17,33,33], 33, 32, 17))
-  .toStrictEqual({ 
-    pan: 4, 
+test('간짱, 일기통관', () => {
+  expect(checkYaku([1,2,3,4,5,6,7,8,9,12,13,14,3,3], 3, 30, 31))
+  .toStrictEqual({
+    pan: 2,
     fu: 0,
     yakuman: 0, 
-    yakuNameArr: ['치또이쯔(칠대자)', '도라 2'], 
-    uradoraCount: 2 })
-})
-
-test('구련보등', () => {
-  expect(checkYaku([1,1,1,2,3,4,5,6,7,8,8,9,9,9], 9, 32, 17))
-  .toStrictEqual({ 
-    pan: 0, 
-    fu: 0,
-    yakuman: 1, 
-    yakuNameArr: ['구련보등'], 
-    uradoraCount: 0 })
-})
-
-test('대삼원', () => {
-  expect(checkYaku([1,2,3,35,35,35,36,36,36,37,37,37,27,27], 9, 32, 17))
-  .toStrictEqual({ 
-    pan: 0, 
-    fu: 0,
-    yakuman: 1, 
-    yakuNameArr: ['대삼원'], 
-    uradoraCount: 0 })
-})
-
-test('핑후 탕야오 이페코 도라1 삼색동순', () => {
-  expect(checkYaku([26,27,28,6,7,8,16,16,17,17,18,18,26,26], 6, 26, 17))
-  .toStrictEqual({ 
-    pan: 5, 
-    fu: 0,
-    yakuman: 0, 
-    yakuNameArr: ['이페코', '탕야오', '삼색동순', '도라 1'], 
-    uradoraCount: 2 })
-})
-
-test('소사희', () => {
-  expect(checkYaku([1,2,3,31,31,32,32,32,33,33,33,34,34,34], 34, 32, 17))
-  .toStrictEqual({ 
-    pan: 5, 
-    fu: 0,
-    yakuman: 1, 
-    yakuNameArr: ['소사희'], 
-    uradoraCount: 0 })
+    yakuNameArr: ['일기통관'], 
+    uradoraCount: 0
+  })
 })
