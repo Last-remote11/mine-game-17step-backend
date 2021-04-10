@@ -1,2 +1,1 @@
-var list = [1,2,3]
-console.log([list])
+console.log([1,2,3,4].length + [].length + [1].length)

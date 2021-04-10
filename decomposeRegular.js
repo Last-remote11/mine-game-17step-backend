@@ -2,41 +2,43 @@ const beginPair = (tilesCopy, chis, pons, heads) => {
   
   if (tilesCopy[0] === tilesCopy[1]) {
     heads.push(tilesCopy[0])
-    return { heads, tilesCopy: tilesCopy.slice(2) }
+    return { heads, tilesCopy: tilesCopy.slice(2), chis, pons }
   } else {
     return { tilesCopy, chis, pons, heads }
   }
 }
 
 const beginChi = (tilesCopy, chis, pons, heads) => {
-  let t1 = tilesCopy[0]
+  var tempArr = [...tilesCopy]
+
+  let t1 = tempArr[0]
   let n = t1 % 10
   if (t1 >= 30 || n >= 8) {
     return { tilesCopy, chis, pons, heads }
   }
   let t2 = t1 + 1
   let t3 = t1 + 2
-  if (tilesCopy.includes(t2) && tilesCopy.includes(t3)) {
-    for(var i = 0; i < tilesCopy.length; i++) { 
-      if (tilesCopy[i] === t1) {  
-        tilesCopy.splice(i, 1); 
+  if (tempArr.includes(t2) && tempArr.includes(t3)) {
+    for(var i = 0; i < tempArr.length; i++) { 
+      if (tempArr[i] === t1) {  
+        tempArr.splice(i, 1); 
         break
       }
     }
-    for( var i = 0; i < tilesCopy.length; i++) { 
-      if (tilesCopy[i] === t2) {  
-        tilesCopy.splice(i, 1); 
+    for( var i = 0; i < tempArr.length; i++) { 
+      if (tempArr[i] === t2) {  
+        tempArr.splice(i, 1); 
         break
       }
     }
-    for( var i = 0; i < tilesCopy.length; i++) { 
-      if ( tilesCopy[i] === t3) {  
-        tilesCopy.splice(i, 1); 
+    for( var i = 0; i < tempArr.length; i++) { 
+      if ( tempArr[i] === t3) {  
+        tempArr.splice(i, 1); 
         break
       }
     }
     chis.push(t1)
-    return { tilesCopy, chis, pons, heads }
+    return { tilesCopy: tempArr, chis, pons, heads }
   } else {
     return { tilesCopy, chis, pons, heads }
   }
@@ -45,7 +47,7 @@ const beginChi = (tilesCopy, chis, pons, heads) => {
 const beginPon = (tilesCopy, chis, pons, heads) => {
   if (tilesCopy.length >= 3 && tilesCopy[0] === tilesCopy[1] && tilesCopy[0] === tilesCopy[2]) {
     pons.push(tilesCopy[0])
-    return { tilesCopy, chis, pons, heads }
+    return { tilesCopy: tilesCopy.slice(3), chis, pons, heads }
   } else {
     return { tilesCopy, chis, pons, heads }
   }
@@ -53,60 +55,50 @@ const beginPon = (tilesCopy, chis, pons, heads) => {
 
 const chiPonPair = [beginChi, beginPon, beginPair]
 
-const dfs = (tilesCopy, queue, depth=0,chis=[], pons=[],heads=[]) => {
-  let initialTiles = [...tilesCopy]
+const dfs = (tilesCopy, queue, depth, chis=[], pons=[],heads=[]) => {
+  var initialTiles = [...tilesCopy]
+
   for (decom of chiPonPair) {
-    console.log(tilesCopy, total, 'depth', depth)
-    if (depth === 5) {
-      for (i of queue) {
-        tilesCopy, chis, pons, heads = i(tilesCopy, chis, pons, heads)
+    if (decom === beginPair && queue.includes(beginPair)) {
+      continue
+    }
+    if (depth === 4) {
+      if (!queue.includes(beginPair) && decom !== beginPair) {
+        continue
       }
-      if (tilesCopy.length === 0) {
-        return { heads, chis, pons }
+      for (i of queue.concat([decom])) {
+        var {tilesCopy, chis, pons, heads} = i(tilesCopy, chis, pons, heads)
+      }
+      if (chis.length + pons.length + heads.length === 5) { // decompose 성공
+        return { tilesCopy, heads, chis, pons }
       } else {
-        tilesCopy = initialTiles,
+        tilesCopy = initialTiles
         chis = []
         pons = []
         heads = []
       }
+  
     } else {
-      
-      dfs(tilesCopy, queue.concat([decom]), depth+1)
+      return dfs(tilesCopy, queue.concat([beginChi]), depth+1)
+      || dfs(tilesCopy, queue.concat([beginPon]), depth+1)
+      || dfs(tilesCopy, queue.concat([beginPair]), depth+1)
     }
   }
 }
+
 var total = 0
 
 const decomposeRegular = (tiles) => {
   tiles.sort()
   var tilesCopy = [...tiles]
 
+  try {
+    var { tilesCopy, chis, pons, heads } = dfs(tilesCopy, [], 0)
+  } catch {
+    var tilesCopy = 'cannot decompose'
+    var heads = []
+  }
 
-  var { tilesCopy, chis, pons, heads } = dfs(tilesCopy, [], 0)
-  
-  // for (var j = 0; j < 6; j++) {
-  //   for (var i = 0; i < 4; i++) { // 4번 실행?
-  //     var { chi, tilesCopy } = beginChi(tilesCopy)
-  //     if (chi) {
-  //       chis.push(chi)
-  //       console.log('치')
-  //     }
-  //   }
-  //   for (var k = 0; k < 4; k++) {
-  //     var { pon, tilesCopy } = beginPon(tilesCopy)
-  //     if (pon) {
-  //       pons.push(pon)
-  //       console.log('퐁')
-  //     }
-  //   }
-    
-      
-  //   var { head, tilesCopy } = beginPair(tilesCopy)
-  //   if (head) {
-  //     heads.push(head)
-  //   }
-  // }
-  
   if (heads.length !== 0) {
     return { heads, chis, pons }
   } else {
@@ -115,6 +107,3 @@ const decomposeRegular = (tiles) => {
 }
 
 module.exports = { decomposeRegular }
-
-
-console.log(decomposeRegular([1,2,3,4,5,6,7,8,9,12,13,14,3,3]))
