@@ -30,13 +30,17 @@ const pinfu = (heads, chis, ronCard) => {
 
 
 
-test('간짱, 일기통관', () => {
-  expect(checkYaku([1,2,3,4,5,6,7,8,9,12,13,14,3,3], 3, 30, 31))
+test('치또이쯔(칠대자), 혼일색', () => {
+  expect(checkYaku([
+    1,  1,  3,  3, 33, 33,
+   34, 34, 35, 35, 36, 36,
+    6,  6
+ ], 3, 30, 31))
   .toStrictEqual({
-    pan: 2,
+    pan: 5,
     fu: 0,
     yakuman: 0, 
-    yakuNameArr: ['일기통관'], 
+    yakuNameArr: ['치또이쯔(칠대자)', '혼일색'], 
     uradoraCount: 0
   })
 })

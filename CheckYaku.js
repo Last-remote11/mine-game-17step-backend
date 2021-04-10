@@ -162,12 +162,10 @@ const pinfu = (heads, chis, ronCard) => {
     chis.includes(21) && !chis.includes(23) && ronCard === 23 ||
     chis.includes(27) && !chis.includes(25) && ronCard === 27
   ) {
-    console.log('변짱')
     return null
   }
   
   var twoSide = chis.concat(chisTail) // 양면확인용
-  console.log('chis', chis, 'ronCard',ronCard,'양면', chis.concat(chisTail))
   if (chis.length === 4 && twoSide.includes(ronCard)) {
       // !chis.some((chi) => [ronCard].includes(chi+1)) && // 간짱
       // heads[0] !== ronCard
@@ -379,7 +377,7 @@ const checkDora = (tiles, dora, uradora) => {
       uradoraCount++;
     }
   }
-  console.log('tiles', tiles,'dora',dora,'doracount',doraCount,'uradoraCount',uradoraCount)
+
   return { doraCount, uradoraCount }
   }
 
@@ -456,8 +454,7 @@ const checkYaku = ( tiles, ronCard, dora, uradora ) => {
     return { pan, fu, yakuman, yakuNameArr, uradoraCount }
   }
 
-  console.log(tiles)
-  
+
   const { heads, chis, pons } = decomposeRegular(tiles)
 
   console.log('heads',heads,'chis',chis,'pons',pons)

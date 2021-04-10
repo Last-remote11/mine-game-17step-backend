@@ -118,9 +118,9 @@ io.on('connection', (socket) => {
     var roomID = roomIDArr[roomIDArr.length-1]
     const mountain = shuffle([...Database])
     const dora = mountain.pop()
-    const uraDora = mountain.pop()
+    const uradora = mountain.pop()
     roomIDDoraMapper[roomID] = dora
-    roomIDUraDoraMapper[roomID] = uraDora
+    roomIDUraDoraMapper[roomID] = uradora
   
     const playerHand1 = []
     for (var i=0; i < 34; i++) {
@@ -171,24 +171,31 @@ io.on('connection', (socket) => {
     var roomID = roomIDArr[roomIDArr.length-1]
     console.log(roomID)
     var dora = roomIDDoraMapper[roomID]
-    var uraDora = roomIDUraDoraMapper[roomID]
+    var uradora = roomIDUraDoraMapper[roomID]
     const { tiles, ronCards } = data
     const { 
       pan, 
       fu, 
       yakuman, 
       yakuNameArr, 
-      uradoraCount } = checkYaku(tiles, ronCards, dora, uraDora)
+      uradoraCount } = checkYaku(tiles, ronCards, dora, uradora)
+    console.log(pan,'판', 
+      fu,'부', 
+
+      
+      yakuman,'역만', 
+      yakuNameArr, 
+      uradoraCount,'도라갯수')
       // 도라, 뒷도라 모두 카운트하지만 판수에 반영하는건 도라만
       // 뒷도라 제외 만관이어야 하기 때문
-    const point = calculatePoint(fu, pan, yakuman, yakuNameArr, uradoraCount)
+    const point = calculatePoint(pan, fu, yakuman, yakuNameArr, uradoraCount)
       // 만관 조건 체크(뒷도라제외), 점수계산(뒷도라포함)
-    if (point != 8000) {
+    if (point != -8000) {
       yakuNameArr.push(`우라도라 ${uradoraCount}`)
     } // 뒷도라제외 만관이상이면 역목록에추가
 
-    socket.broadcast.emit('lose', { point, yakuNameArr })
-    socket.emit('win', { point, yakuNameArr })
+    socket.broadcast.emit('lose', { point, yakuNameArr, tiles, uradora })
+    socket.emit('win', { point, yakuNameArr, tiles, uradora })
   })
 
   socket.on('itsMyTurn', (data) => {
