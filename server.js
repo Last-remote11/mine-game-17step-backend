@@ -140,7 +140,7 @@ io.on('connection', (socket) => {
       myTurn: true
     })
   
-    socket.broadcast.emit('login',{
+    socket.in(roomID).broadcast.emit('login',{
       playerHand: playerHand2,
       dora: dora,
       myTurn: false
@@ -154,14 +154,17 @@ io.on('connection', (socket) => {
   })
 
   socket.on('decide', (data) => {
+    var roomIDArr = [...socket.rooms]
+    var roomID = roomIDArr[roomIDArr.length-1]
     console.log('emit decide')
-    socket.broadcast.emit('opponentDecide', data)
+    socket.in(roomID).broadcast.emit('opponentDecide', data)
   })
 
   socket.on('discard', (data) => {
+    var roomIDArr = [...socket.rooms]
+    var roomID = roomIDArr[roomIDArr.length-1]
     console.log('on discard', data)
-    socket.broadcast.emit('opponentDiscard', data);
-
+    socket.in(roomID).broadcast.emit('opponentDiscard', data);
     console.log(data.order)
   })
 
@@ -172,13 +175,14 @@ io.on('connection', (socket) => {
     console.log(roomID)
     var dora = roomIDDoraMapper[roomID]
     var uradora = roomIDUraDoraMapper[roomID]
-    const { tiles, ronCards } = data
+    const { tiles, ronCard } = data
+    console.log('tiles', tiles,'론카드', ronCard)
     const { 
       pan, 
       fu, 
       yakuman, 
       yakuNameArr, 
-      uradoraCount } = checkYaku(tiles, ronCards, dora, uradora)
+      uradoraCount } = checkYaku(tiles, ronCard, dora, uradora)
     console.log(pan,'판', 
       fu,'부', 
 
@@ -188,14 +192,20 @@ io.on('connection', (socket) => {
       uradoraCount,'도라갯수')
       // 도라, 뒷도라 모두 카운트하지만 판수에 반영하는건 도라만
       // 뒷도라 제외 만관이어야 하기 때문
-    const point = calculatePoint(pan, fu, yakuman, yakuNameArr, uradoraCount)
+    const point = calculatePoint(pan, fu, yakuman, uradoraCount)
       // 만관 조건 체크(뒷도라제외), 점수계산(뒷도라포함)
     if (point != -8000) {
       yakuNameArr.push(`우라도라 ${uradoraCount}`)
     } // 뒷도라제외 만관이상이면 역목록에추가
 
-    socket.broadcast.emit('lose', { point, yakuNameArr, tiles, uradora })
-    socket.emit('win', { point, yakuNameArr, tiles, uradora })
+    socket.to(roomID).broadcast.emit('lose', { pan, point, yakuNameArr, tiles, uradora })
+    socket.emit('win', { pan, yakuman, point, yakuNameArr, tiles, uradora })
+  })
+
+  socket.on('accept', () => {
+    var roomIDArr = [...socket.rooms]
+    var roomID = roomIDArr[roomIDArr.length-1]
+    socket.to(roomID).broadcast.emit('opponentAccept')
   })
 
   socket.on('itsMyTurn', (data) => {
