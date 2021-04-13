@@ -350,6 +350,9 @@ const ryuuiiso = ( heads, chis, pons ) => { // 23468삭, 발
   if ( tempArr.every(e => GREENS.includes(e)) && pons.length === 3 && chis[0] === 22) {
     return 'ryuuiiso'
   }
+  if ( chis.every(e => e === 22) && tempArr.every(e => GREENS.includes(e))) {
+    return 'ryuuiiso'
+  }
   return null
 }
 
