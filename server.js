@@ -49,13 +49,14 @@ const Database = [
   27,27,27,27,
   28,28,28,28,
   29,29,29,29,
-  30,30,30,30,
+  31,31,31,31,
   31,31,31,31,
   32,32,32,32,
   33,33,33,33,
   34,34,34,34,
   35,35,35,35,
-  36,36,36,36
+  36,36,36,36,
+  37,37,37,37
 ]
 const shuffle = (array) => {
   var currentIndex = array.length, temporaryValue, randomIndex;
@@ -70,7 +71,6 @@ const shuffle = (array) => {
 }
 
 
-console.log(checkYaku([1,1,1,2,3,4,5,6,7,8,9,9,9,9]))
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; 
 
@@ -84,8 +84,9 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 //   })
 //   res.send('it is working')} )
 
-var roomIDDoraMapper = {};
-var roomIDUraDoraMapper = {};
+const roomIDDoraMapper = {};
+const roomIDUraDoraMapper = {};
+
 
 io.on('connection', (socket) => {
   socket.removeAllListeners
@@ -131,6 +132,7 @@ io.on('connection', (socket) => {
     for (var i=0; i < 34; i++) {
       playerHand2.push(mountain.pop())
     }
+    console.log('셔플')
     
     socket.name = data.name
   
@@ -140,11 +142,12 @@ io.on('connection', (socket) => {
       myTurn: true
     })
   
-    socket.in(roomID).broadcast.emit('login',{
+    socket.in(roomID).broadcast.emit('login', {
       playerHand: playerHand2,
       dora: dora,
       myTurn: false
     })
+    console.log('배패')
   })
   
 
@@ -185,8 +188,6 @@ io.on('connection', (socket) => {
       uradoraCount } = checkYaku(tiles, ronCard, dora, uradora)
     console.log(pan,'판', 
       fu,'부', 
-
-      
       yakuman,'역만', 
       yakuNameArr, 
       uradoraCount,'도라갯수')
@@ -198,7 +199,7 @@ io.on('connection', (socket) => {
       yakuNameArr.push(`우라도라 ${uradoraCount}`)
     } // 뒷도라제외 만관이상이면 역목록에추가
 
-    socket.to(roomID).broadcast.emit('lose', { pan, point, yakuNameArr, tiles, uradora })
+    socket.to(roomID).broadcast.emit('lose', { pan, yakuman, point, yakuNameArr, tiles, uradora })
     socket.emit('win', { pan, yakuman, point, yakuNameArr, tiles, uradora })
   })
 
