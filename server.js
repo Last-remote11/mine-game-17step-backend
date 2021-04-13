@@ -76,13 +76,8 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 
 
-// app.get('/', (req, res) => {
-//   res.cookie('session', '1', { httpOnly: true })
-//   res.cookie('session', '1', { secure: true })
-//   res.set({
-//     'Content-Security-Policy': "script-src 'self' 'https://apis.google.com'"
-//   })
-//   res.send('it is working')} )
+app.get('/', (req, res) => {
+  res.send('it is working')} )
 
 const roomIDDoraMapper = {};
 const roomIDUraDoraMapper = {};
