@@ -77,7 +77,8 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 
 app.get('/', (req, res) => {
-  res.send('it is working')} )
+  res.send('it is working')
+} )
 
 const roomIDDoraMapper = {};
 const roomIDUraDoraMapper = {};
@@ -215,6 +216,6 @@ io.on('connection', (socket) => {
 })  
 
 
-server.listen(3001, () => {
-  console.log('it is running on port 3001')
+server.listen(process.env.PORT, () => {
+  console.log(`server is running at ${process.env.PORT}`)
 })
