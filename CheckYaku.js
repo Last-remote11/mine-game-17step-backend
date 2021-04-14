@@ -247,28 +247,24 @@ const sanshokudoko = ( pons ) => {
   return null
 }
 
-const chanta = ( heads, chis, pons ) => {
+const chanta = ( heads, chis, pons ) => { // 찬타, 준찬타, 혼노두
   if (
     ROYAL.includes(heads[0])
  && chis.every((chi) => [1,11,21,7,17,27].includes(chi))
  && pons.every((pon) => ROYAL.includes(pon))
  ) { 
    if (JunROYAL.includes(heads[0]) && pons.every((pon) => JunROYAL.includes(pon))) { return 'junchan' }
+   if (
+    pons.length === 4 &&
+    pons.every((pon) => ROYAL.includes(pon)) &&
+    ROYAL.includes(heads[0])
+    ) { return 'honroto' }
    return 'chanta'
+   
  }
  return null
 }
 
-const honroto = (heads, pons) => {
-  if (
-    pons.length === 4 &&
-    pons.every((pon) => ROYAL.includes(pon)) &&
-    ROYAL.includes(heads[0])
-    ) {
-      return 'honroto'
-  }
-  return null
-}
 
 const honitsu_chinitsu_tsuuiiso = (heads, chis, pons) => {
   let mix = heads.concat(chis.concat(pons))
@@ -530,8 +526,8 @@ const checkYaku = ( tiles, ronCard, dora, uradora ) => {
     pan += 3
     yakuNameArr.push('준찬타(순전대요구)')
   }
-
-  if (honroto(heads, pons) === 'honroto') {
+  
+  if (chanta(heads, chis, pons) === 'honroto') {
     pan += 2
     yakuNameArr.push('혼노두')
   }
