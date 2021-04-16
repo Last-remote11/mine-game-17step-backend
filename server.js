@@ -58,7 +58,7 @@ const Database = [
   37,37,37,37
 ]
 const shuffle = (array) => {
-  var currentIndex = array.length, temporaryValue, randomIndex;
+  let currentIndex = array.length, temporaryValue, randomIndex;
   while (0 !== currentIndex) {
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex -= 1;
@@ -81,6 +81,7 @@ app.get('/', (req, res) => {
 
 const roomIDDoraMapper = {};
 const roomIDUraDoraMapper = {};
+const roomIDTurnMapper = {};
 
 
 io.on('connection', (socket) => {
@@ -110,21 +111,22 @@ io.on('connection', (socket) => {
 
   socket.on('login', (data) => {
     console.log('login', socket.rooms)
-    var roomIDArr = [...socket.rooms]
-    var roomID = roomIDArr[roomIDArr.length-1]
+    let roomIDArr = [...socket.rooms]
+    let roomID = roomIDArr[roomIDArr.length-1]
     const mountain = shuffle([...Database])
     const dora = mountain.pop()
     const uradora = mountain.pop()
     roomIDDoraMapper[roomID] = dora
     roomIDUraDoraMapper[roomID] = uradora
+    roomIDTurnMapper[roomID] = 0
   
     const playerHand1 = []
-    for (var i=0; i < 34; i++) {
+    for (let i=0; i < 34; i++) {
       playerHand1.push(mountain.pop())
     }
   
     const playerHand2 = []
-    for (var i=0; i < 34; i++) {
+    for (let i=0; i < 34; i++) {
       playerHand2.push(mountain.pop())
     }
     console.log('셔플')
@@ -152,35 +154,43 @@ io.on('connection', (socket) => {
   })
 
   socket.on('decide', (data) => {
-    var roomIDArr = [...socket.rooms]
-    var roomID = roomIDArr[roomIDArr.length-1]
+    let roomIDArr = [...socket.rooms]
+    let roomID = roomIDArr[roomIDArr.length-1]
     console.log('emit decide')
     socket.in(roomID).broadcast.emit('opponentDecide', data)
   })
 
   socket.on('discard', (data) => {
-    var roomIDArr = [...socket.rooms]
-    var roomID = roomIDArr[roomIDArr.length-1]
-    console.log('on discard', data)
-    socket.in(roomID).broadcast.emit('opponentDiscard', data);
-    console.log(data.order)
+    let roomIDArr = [...socket.rooms]
+    let roomID = roomIDArr[roomIDArr.length-1]
+    let turn = roomIDTurnMapper[roomID]
+    roomIDTurnMapper[roomID]++
+    console.log('on discard', data, 'turn', turn)
+    
+    if (turn === 34) {
+      console.log('유국')
+      io.in(roomID).emit('draw')
+    } else {
+      socket.in(roomID).broadcast.emit('opponentDiscard', data);
+      console.log(data.order)
+    }
   })
 
   socket.on('ron', (data) => {
     console.log(data)
-    var roomIDArr = [...socket.rooms]
-    var roomID = roomIDArr[roomIDArr.length-1]
-    console.log(roomID)
-    var dora = roomIDDoraMapper[roomID]
-    var uradora = roomIDUraDoraMapper[roomID]
-    const { tiles, ronCard } = data
-    console.log('tiles', tiles,'론카드', ronCard)
+    let roomIDArr = [...socket.rooms]
+    let roomID = roomIDArr[roomIDArr.length-1]
+    let dora = roomIDDoraMapper[roomID]
+    let uradora = roomIDUraDoraMapper[roomID]
+
+    const { tiles, ronCard, oya, soon } = data
+    console.log('tiles', tiles,'ronCard', ronCard)
     const { 
       pan, 
       fu, 
       yakuman, 
       yakuNameArr, 
-      uradoraCount } = checkYaku(tiles, ronCard, dora, uradora)
+      uradoraCount } = checkYaku(tiles, ronCard, dora, uradora, oya, soon)
     console.log(pan,'판', 
       fu,'부', 
       yakuman,'역만', 
@@ -199,8 +209,8 @@ io.on('connection', (socket) => {
   })
 
   socket.on('accept', () => {
-    var roomIDArr = [...socket.rooms]
-    var roomID = roomIDArr[roomIDArr.length-1]
+    let roomIDArr = [...socket.rooms]
+    let roomID = roomIDArr[roomIDArr.length-1]
     socket.to(roomID).broadcast.emit('opponentAccept')
   })
 
@@ -215,6 +225,6 @@ io.on('connection', (socket) => {
 })  
 
 
-server.listen(process.env.PORT, () => {
-  console.log(`server is running at ${process.env.PORT}`)
+server.listen(process.env.PORT || 3000, () => {
+  console.log(`server is running at ${process.env.PORT || 3000}`)
 })

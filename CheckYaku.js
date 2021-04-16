@@ -28,36 +28,36 @@ const chuurenGroup = [
 ]
 
 const YAKU = {
-  'pinfu': 1, //v
-  'iipeiko': 1, //v
-  'ryanpeiko': 3,//v
-  'tanyao': 1,//v
-  'wind': 1,//v
-  'haku': 1,//v
-  'hatsu': 1,//v
-  'chun': 1,//v
-  'sanshokudojun': 2,//v
-  'sanshokudoko': 2,//v
-  'itsuu': 2, //v
-  'chitoitsu': 2,//v
-  'chanta': 2,//v
-  'junchan': 3,//v
-  'honroto': 2,//v
-  'honitsu': 3,//v
-  'chinitsu': 6,//v
-  'toitoi': 2, // 울기가 없으므로 없음
-  'sananko': 2, //v
-  'shosangen': 2, //v
-  'daisangen': 13, //v
-  'kokushi': 13, //v
-  'suuanko': 13, //v
-  'suushi': 13,// 소/대사희 v
-  'chinroto': 13,// 청노두 v
-  'tsuuiiso': 13,// 자일색 v
-  'ryuuiiso': 13,// 녹일색 v
-  'chuuren': 13,// 구련
   'ippatsu': 1,
   'hotei': 1,
+  'pinfu': 1, 
+  'iipeiko': 1, 
+  'ryanpeiko': 3,
+  'tanyao': 1,
+  'wind': 1,
+  'haku': 1,
+  'hatsu': 1,
+  'chun': 1,
+  'sanshokudojun': 2,
+  'sanshokudoko': 2,
+  'itsuu': 2, 
+  'chitoitsu': 2,
+  'chanta': 2,
+  'junchan': 3,
+  'honroto': 2,
+  'honitsu': 3,
+  'chinitsu': 6,
+  'toitoi': 2, // 울기가 없으므로 없다?
+  'sananko': 2, 
+  'shosangen': 2, 
+  'daisangen': 13, 
+  'kokushi': 13, 
+  'suuanko': 13, 
+  'suushi': 13,// 소or대사희
+  'chinroto': 13,// 청노두
+  'tsuuiiso': 13,// 자일색
+  'ryuuiiso': 13,// 녹일색
+  'chuuren': 13,// 구련보등
 }
 
 
@@ -149,6 +149,19 @@ const chitoitsu = (tiles) => {
 
 // **************************************************
 // 일반적인 역(decompose 이후에 와야 함)
+const ippatsu = (soon) => {
+  if (soon === 1) {
+    return 'ippatsu'
+  }
+  return null
+}
+
+const hotei = (oya, soon) => {
+  if (oya === true && soon === 17) {
+    return 'hotei'
+  }
+  return null
+}
 
 const pinfu = (heads, chis, ronCard) => {
   var chisTail = chis.map(e => e+2)
@@ -204,6 +217,16 @@ const tanyao = ( heads, chis, pons ) => {
 }
 
 
+const tou = ( pons, oya ) => {
+  if (pons.includes(31) && oya===true) {
+    return 'tou'
+  }
+}
+const sha = ( pons, oya ) => {
+  if (pons.includes(33) && oya===false) {
+    return 'sha'
+  }
+}
 const haku = ( pons ) => {
   if (pons.includes(35)) {
     return 'haku'
@@ -386,14 +409,14 @@ const checkDora = (tiles, dora, uradora) => {
 // ***********************************************************
 // ***********************************************************
 
-const checkYaku = ( tiles, ronCard, dora, uradora ) => { 
+const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => { 
   // tiles는 14개의 배열을 받음
   // 역만이 하나라도 있으면 도라, 뒷도라 카운트 안함(그냥 0으로 반환)
 
   tiles.sort()
 
-  let yakuNameArr = []
-  let pan = 0
+  let yakuNameArr = ['리치']
+  let pan = 1
   let fu = 0
   let yakuman = 0
   var uradoraCount = 0
@@ -403,6 +426,17 @@ const checkYaku = ( tiles, ronCard, dora, uradora ) => {
     yakuNameArr.push('국사무쌍')
     return { pan, fu, yakuman, yakuNameArr, uradoraCount }
   }
+  
+  if (ippatsu(soon) === 'ippatsu') {
+    pan += 1
+    yakuNameArr.push('일발')
+  }
+
+  if (hotei(oya, soon) === 'hotei') {
+    pan += 1
+    yakuNameArr.push('해저/하저')
+  }
+
 
   switch (chitoitsu(tiles)) {
     case 'chitoitsu':
@@ -490,6 +524,18 @@ const checkYaku = ( tiles, ronCard, dora, uradora ) => {
   if (tanyao(heads, chis, pons) === 'tanyao') {
     pan += 1
     yakuNameArr.push('탕야오')
+  }
+
+
+
+  if (tou(pons) === 'tou') {
+    pan += 1
+    yakuNameArr.push('동')
+  }
+
+  if (sha(pons) === 'sha') {
+    pan += 1
+    yakuNameArr.push('서')
   }
 
   if (haku(pons) === 'haku') {
