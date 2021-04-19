@@ -429,45 +429,45 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
   
   if (ippatsu(soon) === 'ippatsu') {
     pan += 1
-    yakuNameArr.push('일발')
+    yakuNameArr.push('일발 1')
   }
 
   if (hotei(oya, soon) === 'hotei') {
     pan += 1
-    yakuNameArr.push('해저/하저')
+    yakuNameArr.push('해저/하저 1')
   }
 
 
   switch (chitoitsu(tiles)) {
     case 'chitoitsu':
       pan += 2
-      yakuNameArr.push('치또이쯔(칠대자)')
+      yakuNameArr.push('치또이쯔(칠대자) 2')
       break;
     case 'chitoitsu_tanyao':
       pan += 3
-      yakuNameArr.push('치또이쯔(칠대자)')
-      yakuNameArr.push('탕야오')
+      yakuNameArr.push('치또이쯔(칠대자) 2')
+      yakuNameArr.push('탕야오 1')
       break;
     case 'chitoitsu_honitsu':
       pan += 5
-      yakuNameArr.push('치또이쯔(칠대자)')
-      yakuNameArr.push('혼일색')
+      yakuNameArr.push('치또이쯔(칠대자) 2')
+      yakuNameArr.push('혼일색 3')
       break;
     case 'chitoitsu_chanta' :
       pan += 4
-      yakuNameArr.push('치또이쯔(칠대자)')
-      yakuNameArr.push('찬타(혼전대요구)')
+      yakuNameArr.push('치또이쯔(칠대자) 2')
+      yakuNameArr.push('찬타(혼전대요구) 2')
       break;
     case 'chitoitsu_honitsu_chanta':
       pan += 7
-      yakuNameArr.push('치또이쯔(칠대자)')
-      yakuNameArr.push('혼일색')
-      yakuNameArr.push('찬타(혼전대요구)')
+      yakuNameArr.push('치또이쯔(칠대자) 2')
+      yakuNameArr.push('혼일색 3')
+      yakuNameArr.push('찬타(혼전대요구) 2')
       break;
     case 'cchitoitsu_chinitsu':
       pan += 8
-      yakuNameArr.push('치또이쯔(칠대자)')
-      yakuNameArr.push('청일색')
+      yakuNameArr.push('치또이쯔(칠대자) 2')
+      yakuNameArr.push('청일색 6')
       break;
     case '7star':
       yakuman ++
@@ -508,80 +508,80 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
 
   if (pinfu(heads, chis, ronCard) === 'pinfu') {
     pan += 1
-    yakuNameArr.push('핑후')
+    yakuNameArr.push('핑후 1')
   }
 
   if (iipeiko(chis) === 'iipeiko') {
     pan += 1
-    yakuNameArr.push('이페코')
+    yakuNameArr.push('이페코 1')
   }
 
   if (ryanpeiko(chis) === 'ryanpeiko') {
     pan += 3
-    yakuNameArr.push('량페코')
+    yakuNameArr.push('량페코 3')
   }
 
   if (tanyao(heads, chis, pons) === 'tanyao') {
     pan += 1
-    yakuNameArr.push('탕야오')
+    yakuNameArr.push('탕야오 1')
   }
 
 
 
   if (tou(pons) === 'tou') {
     pan += 1
-    yakuNameArr.push('동')
+    yakuNameArr.push('동 1')
   }
 
   if (sha(pons) === 'sha') {
     pan += 1
-    yakuNameArr.push('서')
+    yakuNameArr.push('서 1')
   }
 
   if (haku(pons) === 'haku') {
     pan += 1
-    yakuNameArr.push('백')
+    yakuNameArr.push('백 1')
   }
 
   if (hatsu(pons) === 'hatsu') {
     pan += 1
-    yakuNameArr.push('발')
+    yakuNameArr.push('발 1')
   }
   
   if (chun(pons) === 'chun') {
     pan += 1
-    yakuNameArr.push('중')
+    yakuNameArr.push('중 1')
   }
 
   if (sanshokudojun(chis) === 'sanshokudojun') {
     pan += 2
-    yakuNameArr.push('삼색동순')
+    yakuNameArr.push('삼색동순 2')
   }
 
   if (sanshokudoko(pons) === 'sanshokudoko') {
-    pan += 1
-    yakuNameArr.push('삼색동각')
+    pan += 2
+    yakuNameArr.push('삼색동각 2')
   }
 
   if (chanta(heads, chis, pons) === 'chanta') {
     pan += 2
-    yakuNameArr.push('찬타(혼전대요구)')
+    yakuNameArr.push('찬타(혼전대요구) 2')
   }
 
   if (chanta(heads, chis, pons) === 'junchan') {
     pan += 3
-    yakuNameArr.push('준찬타(순전대요구)')
+    yakuNameArr.push('준찬타(순전대요구) 3')
   }
   
   if (chanta(heads, chis, pons) === 'honroto') {
     pan += 2
-    yakuNameArr.push('혼노두')
+    yakuNameArr.push('혼노두 2')
   }
 
   switch (honitsu_chinitsu_tsuuiiso(heads, chis, pons)) {
     case 'honitsu':
       pan += 3
-      yakuNameArr.push('혼일색')
+      yakuNameArr.push('혼일색 3')
       break;
     case 'tsuuiiso':
       yakuman++
@@ -589,7 +589,7 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
       break;
     case 'chinitsu':
       pan += 6
-      yakuNameArr.push('청일색')
+      yakuNameArr.push('청일색 6')
       break;
     default:
       true
@@ -602,7 +602,7 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
       break;
     case 'sananko':
       pan += 3
-      yakuNameArr.push('산안커(삼암각)')
+      yakuNameArr.push('산안커(삼암각) 3')
       break;
     default:
       true
@@ -615,7 +615,7 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
       break;
     case 'shosangen':
       pan += 2
-      yakuNameArr.push('소삼원')
+      yakuNameArr.push('소삼원 2')
       break;
     default:
       true
@@ -623,7 +623,7 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
 
   if (itsuu(chis) === 'itsuu') {
     pan += 2
-    yakuNameArr.push('일기통관')
+    yakuNameArr.push('일기통관 2')
   }
 
   switch (suushi(heads, pons)) {
