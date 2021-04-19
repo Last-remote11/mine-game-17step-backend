@@ -219,7 +219,13 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    console.log('user disconnected: ' + socket.id);
+    let roomIDArr = [...socket.rooms]
+    let roomID = roomIDArr[roomIDArr.length-1]
+    delete roomIDDoraMapper[roomID]
+    delete roomIDUraDoraMapper[roomID]
+    delete roomIDTurnMapper[roomID]
+
+    console.log('user disconnected: ' + socket.id + '/ roomID: ' + roomID);
   });
 
 })  
