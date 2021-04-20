@@ -207,15 +207,11 @@ io.on('connection', (socket) => {
     socket.to(roomID).broadcast.emit('lose', { pan, yakuman, point, yakuNameArr, tiles, uradora })
     socket.emit('win', { pan, yakuman, point, yakuNameArr, tiles, uradora })
   })
-
+  
   socket.on('accept', () => {
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
     socket.to(roomID).broadcast.emit('opponentAccept')
-  })
-
-  socket.on('itsMyTurn', (data) => {
-    socket.emit('itsMyTurn', true)
   })
 
   socket.on('disconnect', () => {
@@ -227,7 +223,6 @@ io.on('connection', (socket) => {
 
     console.log('user disconnected: ' + socket.id + '/ roomID: ' + roomID);
   });
-
 })  
 
 

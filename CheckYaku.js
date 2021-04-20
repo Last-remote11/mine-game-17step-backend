@@ -381,13 +381,19 @@ const ryuuiiso = ( heads, chis, pons ) => { // 23468삭, 발
 
 const checkDora = (tiles, dora, uradora) => { 
   // ※도라가 아닌 도라표시패가 들어옴
-  // 뒷도라는 어차피 안보이니까 그냥계산?
+  // 뒷도라는 어차피 안보이니까 그냥계산? => X
   dora++
   dora === 10 ? dora = 1 : true
   dora === 20 ? dora = 11 : true
   dora === 30 ? dora = 21 : true
   dora === 35 ? dora = 31 : true
   dora === 38 ? dora = 35 : true
+  uradora++
+  uradora === 10 ? uradora = 1 : true
+  uradora === 20 ? uradora = 11 : true
+  uradora === 30 ? uradora = 21 : true
+  uradora === 35 ? uradora = 31 : true
+  uradora === 38 ? uradora = 35 : true
 
   let doraCount = 0;
   let uradoraCount = 0
