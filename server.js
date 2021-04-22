@@ -20,6 +20,7 @@ app.use(helmet())
 app.use(morgan('combined'))
 // tiny - 간단, combined - 좀 더 자세한 로그
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; 
 
 const Database = [
   1,1,1,1,
@@ -68,10 +69,6 @@ const shuffle = (array) => {
   }
   return array;
 }
-
-
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; 
 
 
 

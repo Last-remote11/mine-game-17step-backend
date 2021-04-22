@@ -99,7 +99,7 @@ const decomposeRegular = (tiles) => {
     var heads = []
   }
 
-  if (heads.length !== 0) {
+  if (heads.length === 1) {
     return { heads, chis, pons }
   } else {
     return { heads: 'cannot decompose', chis: 'cannot decompose', pons: 'cannot decompose'} // not regular
