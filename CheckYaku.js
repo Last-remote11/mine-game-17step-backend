@@ -91,7 +91,7 @@ const chuuren = (tiles, ronCard) => { // tiles는 14개의 완전한 패다?
     return null
   }
 
-  let tilesNumber = tiles.map(tile => tile % 10).sort((a, b) => {return a - b})
+  let tilesNumber = tiles.map(tile => tile % 10).sort((a, b) => a - b)
   if (chuurenGroup.some(chuurenTile => arraysEqual(tilesNumber, chuurenTile))) {
     return 'chuuren'
   }
@@ -246,7 +246,7 @@ const chun = ( pons ) => {
 const sanshokudojun = ( chis ) => {
   if (chis.length >= 3) {
     let numberOfCard = chis.map(chi => chi % 10)
-    numberOfCard.sort((a, b) => {return (a - b)})
+    numberOfCard.sort((a, b) => (a - b))
     if (
       numberOfCard[0] === numberOfCard[1] && numberOfCard[1] === numberOfCard[2] ||
       numberOfCard[1] === numberOfCard[2] && numberOfCard[2] === numberOfCard[3]) {
@@ -293,7 +293,7 @@ const honitsu_chinitsu_tsuuiiso = (heads, chis, pons) => {
   let mix = heads.concat(chis.concat(pons))
   let mixDiv = mix.map(element => parseInt(element / 10))
   let mixSet = new Set(mixDiv)
-  let tempArr = [...mixSet].sort((a, b) => {return a - b})
+  let tempArr = [...mixSet].sort((a, b) =>  a - b)
   if (tempArr.includes(3) && tempArr.length === 2) {
     return 'honitsu'
   }
@@ -419,7 +419,7 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
   // tiles는 14개의 배열을 받음
   // 역만이 하나라도 있으면 도라, 뒷도라 카운트 안함(그냥 0으로 반환)
 
-  tiles.sort((a, b) => {return a - b})
+  tiles.sort((a, b) => a - b)
 
   let yakuNameArr = ['리치']
   let pan = 1
@@ -462,7 +462,7 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
     case 'chitoitsu_chanta' :
       pan += 4
       yakuNameArr.push('치또이쯔(칠대자) 2')
-      yakuNameArr.push('찬타(혼전대요구) 2')
+      yakuNameArr.push('혼노두 2')
       break;
     case 'chitoitsu_honitsu_chanta':
       pan += 7

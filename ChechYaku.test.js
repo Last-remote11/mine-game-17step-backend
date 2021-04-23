@@ -32,10 +32,10 @@ const pinfu = (heads, chis, ronCard) => {
 
 test('혼노두', () => {
   expect(checkYaku(    [
-    1,  2, 3,  4,  5,  6,
-    7,  8, 9, 21, 21, 21,
-   22, 22
- ], 3, 30, 31))
+    2,  2, 3,  3,  31,  31,
+    33,  33, 5, 5, 6, 6,
+   7, 7
+ ], 33, 30, 31))
   .toStrictEqual({
     pan: 5,
     fu: 0,

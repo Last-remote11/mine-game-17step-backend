@@ -107,7 +107,8 @@ io.on('connection', (socket) => {
 
 
   socket.on('login', (data) => {
-    console.log('login', socket.rooms)
+    console.log('login, 방목록', socket.rooms)
+    console.log('방번호 도라', roomIDDoraMapper)
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
     const mountain = shuffle([...Database])
@@ -217,7 +218,7 @@ io.on('connection', (socket) => {
     delete roomIDDoraMapper[roomID]
     delete roomIDUraDoraMapper[roomID]
     delete roomIDTurnMapper[roomID]
-
+    socket.to(roomID).broadcast.emit('playerLeft')
     console.log('user disconnected: ' + socket.id + '/ roomID: ' + roomID);
   });
 })  
