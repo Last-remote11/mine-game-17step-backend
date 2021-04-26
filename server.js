@@ -76,6 +76,8 @@ app.get('/', (req, res) => {
   res.send('it is working')
 } )
 
+const socketIDRoomMapper = {};
+
 const roomIDDoraMapper = {};
 const roomIDUraDoraMapper = {};
 const roomIDTurnMapper = {};
@@ -86,9 +88,11 @@ io.on('connection', (socket) => {
   console.log(socket.id, ' 연결됨')
   socket.emit('connected', socket.id)
   
+  
   socket.on('joinroom', (roomID) => {
     roomID = parseInt(roomID)
     socket.join(roomID)
+    socketIDRoomMapper[socket.id] = roomID
     let number = io.sockets.adapter.rooms.get(roomID).size
     console.log('방ID : ', roomID, number)
     if (number === 1) {
@@ -213,12 +217,12 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    let roomIDArr = [...socket.rooms]
-    let roomID = roomIDArr[roomIDArr.length-1]
+    let roomID = socketIDRoomMapper[socket.id]
+    socket.to(roomID).broadcast.emit('playerLeft')
     delete roomIDDoraMapper[roomID]
     delete roomIDUraDoraMapper[roomID]
     delete roomIDTurnMapper[roomID]
-    socket.to(roomID).broadcast.emit('playerLeft')
+    delete socketIDRoomMapper[socket.id]
     console.log('user disconnected: ' + socket.id + '/ roomID: ' + roomID);
   });
 })  

@@ -607,8 +607,9 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
       yakuNameArr.push('쓰안커(사암각)')
       break;
     case 'sananko':
-      pan += 3
-      yakuNameArr.push('산안커(삼암각) 3')
+      pan += 4
+      yakuNameArr.push('산안커(삼암각) 2')
+      yakuNameArr.push('또이또이 2')
       break;
     default:
       true
