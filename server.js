@@ -205,7 +205,7 @@ io.on('connection', (socket) => {
     if (point != -8000) {
       yakuNameArr.push(`우라도라 ${uradoraCount}`)
     } // 뒷도라제외 만관이상이면 역목록에추가
-
+    tiles.sort((a, b) => a - b)
     socket.to(roomID).broadcast.emit('lose', { pan, yakuman, point, yakuNameArr, tiles, uradora })
     socket.emit('win', { pan, yakuman, point, yakuNameArr, tiles, uradora })
   })

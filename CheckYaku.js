@@ -421,7 +421,7 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
 
   tiles.sort((a, b) => a - b)
 
-  let yakuNameArr = ['리치']
+  let yakuNameArr = ['리치 1']
   let pan = 1
   let fu = 0
   let yakuman = 0
@@ -663,7 +663,6 @@ const checkYaku = ( tiles, ronCard, dora, uradora, oya, soon ) => {
       yakuNameArr.push(`도라 ${doraCount}`)
     }
   }
-
 
   return { pan, fu, yakuman, yakuNameArr, uradoraCount }
 }
