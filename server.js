@@ -100,7 +100,7 @@ io.on('connection', (socket) => {
       console.log('emit ONEUSER')
     }
     if (number === 2) {
-      io.in(roomID).emit('twoUser')
+      io.in(roomID).emit('twoUser', roomID)
       console.log('emit TWOROOM')
     }
     if (number === 3) {
