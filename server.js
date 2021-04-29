@@ -70,7 +70,20 @@ const shuffle = (array) => {
   return array;
 }
 
-
+const checkRoomPeople = {
+  '1': (roomID) => {
+    io.in(roomID).emit('oneUser')
+    console.log('emit ONEUSER')
+  },
+  '2': (roomID) => {
+    io.in(roomID).emit('twoUser', roomID)
+    console.log('emit TWOROOM')
+  },
+  '3': () => {
+    socket.emit('fullRoom', 'fullRoom')
+    socket.disconnect()
+  }
+}
 
 app.get('/', (req, res) => {
   res.send('it is working')
@@ -95,18 +108,8 @@ io.on('connection', (socket) => {
     socketIDRoomMapper[socket.id] = roomID
     let number = io.sockets.adapter.rooms.get(roomID).size
     console.log('방ID : ', roomID, number)
-    if (number === 1) {
-      io.in(roomID).emit('oneUser')
-      console.log('emit ONEUSER')
-    }
-    if (number === 2) {
-      io.in(roomID).emit('twoUser', roomID)
-      console.log('emit TWOROOM')
-    }
-    if (number === 3) {
-      socket.emit('fullRoom', 'fullRoom')
-      socket.disconnect()
-    }
+
+    checkRoomPeople[number](roomID)
   })
 
 
