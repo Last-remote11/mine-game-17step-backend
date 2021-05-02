@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 
 const { checkYaku } = require('./CheckYaku')
+const { shuffle } = require('./functions')
 const { calculatePoint } = require('./CalculatePoint')
 
 const app = express();
@@ -58,17 +59,19 @@ const Database = [
   36,36,36,36,
   37,37,37,37
 ]
-const shuffle = (array) => {
-  let currentIndex = array.length, temporaryValue, randomIndex;
-  while (0 !== currentIndex) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
-  return array;
-}
+
+
+
+
+app.get('/', (req, res) => {
+  res.send('it is working')
+} )
+
+const socketIDRoomMapper = {};
+
+const roomIDDoraMapper = {};
+const roomIDUraDoraMapper = {};
+const roomIDTurnMapper = {};
 
 const checkRoomPeople = {
   '1': (roomID) => {
@@ -85,17 +88,6 @@ const checkRoomPeople = {
   }
 }
 
-app.get('/', (req, res) => {
-  res.send('it is working')
-} )
-
-const socketIDRoomMapper = {};
-
-const roomIDDoraMapper = {};
-const roomIDUraDoraMapper = {};
-const roomIDTurnMapper = {};
-
-
 io.on('connection', (socket) => {
   socket.removeAllListeners
   console.log(socket.id, ' 연결됨')
@@ -110,6 +102,11 @@ io.on('connection', (socket) => {
     console.log('방ID : ', roomID, number)
 
     checkRoomPeople[number](roomID)
+  })
+
+
+  socket.on('randomMatch', () => {
+    console.log('randomMatch!')
   })
 
 
