@@ -1,5 +1,3 @@
-
-
 const shuffle = (array) => {
   let currentIndex = array.length, temporaryValue, randomIndex;
   while (0 !== currentIndex) {
@@ -12,4 +10,4 @@ const shuffle = (array) => {
   return array;
 }
 
-module.exports = { checkRoomPeople, shuffle }
+module.exports = { shuffle }

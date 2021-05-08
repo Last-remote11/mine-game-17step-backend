@@ -2,6 +2,8 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
+const redis = require("redis");
+const client = redis.createClient();
 
 const { checkYaku } = require('./CheckYaku')
 const { shuffle } = require('./functions')
@@ -14,6 +16,8 @@ const io = require('socket.io')(server,{
     origin: '*',
   }
 });
+
+const redis = 
 
 app.use(cors());
 app.use(express.json()); 
