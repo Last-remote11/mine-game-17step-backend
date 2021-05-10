@@ -1,9 +1,11 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const bluebird = require('bluebird');
 const helmet = require('helmet');
 const redis = require("redis");
-const client = redis.createClient();
+bluebird.promisifyAll(redis.RedisClient.prototype);
+const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
 
 const { checkYaku } = require('./CheckYaku')
 const { shuffle } = require('./functions')
@@ -17,7 +19,7 @@ const io = require('socket.io')(server,{
   }
 });
 
-const redis = 
+
 
 app.use(cors());
 app.use(express.json()); 
@@ -65,11 +67,39 @@ const Database = [
 ]
 
 
-
-
 app.get('/', (req, res) => {
   res.send('it is working')
 } )
+
+const saveDora = (roomID, dora) => {
+  redisClient.hset('dora', roomID, dora, (err, reply) => {
+    reply ? console.log(reply,'안에라') : console.log(err,'에라')
+  })
+}
+const saveUradora = (roomID, uradora) => {
+  redisClient.hset('uradora', roomID, uradora, (err, reply) => {
+    reply ? console.log(reply) : console.log(err)
+  })
+}
+const saveTurn = (roomID, turn) => {
+  redisClient.hset('turn', roomID, turn, (err, reply) => {
+    reply ? console.log(reply) : console.log(err)
+  })
+}
+const saveSocketRoomID = (socketID, roomID) => {
+  redisClient.hset('roomID', socketID, roomID, (err, reply) => {
+    reply ? console.log(reply) : console.log(err)
+  })
+}
+
+const getHValue = (hash, key) => {
+  let value = redisClient.hgetAsync(hash, key).then((reply) => {
+    console.log(reply.toString(),'가나다라마바사')
+    return reply;
+  });
+
+  return Promise.all(value);
+}
 
 const socketIDRoomMapper = {};
 
@@ -101,7 +131,8 @@ io.on('connection', (socket) => {
   socket.on('joinroom', (roomID) => {
     roomID = parseInt(roomID)
     socket.join(roomID)
-    socketIDRoomMapper[socket.id] = roomID
+    saveSocketRoomID(socket.id, roomID)
+    // socketIDRoomMapper[socket.id] = roomID
     let number = io.sockets.adapter.rooms.get(roomID).size
     console.log('방ID : ', roomID, number)
 
@@ -122,6 +153,9 @@ io.on('connection', (socket) => {
     const mountain = shuffle([...Database])
     const dora = mountain.pop()
     const uradora = mountain.pop()
+    saveDora(roomID, dora)
+    saveUradora(roomID, uradora)
+    saveTurn(roomID, 0)
     roomIDDoraMapper[roomID] = dora
     roomIDUraDoraMapper[roomID] = uradora
     roomIDTurnMapper[roomID] = 0
@@ -169,8 +203,13 @@ io.on('connection', (socket) => {
   socket.on('discard', (data) => {
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
-    let turn = roomIDTurnMapper[roomID]
-    roomIDTurnMapper[roomID]++
+    let turn
+    // let turn = roomIDTurnMapper[roomID]
+    getHValue('turn', roomID).then((result) => {
+      turn = result
+    })
+    // roomIDTurnMapper[roomID]++
+    redisClient.hincrby('turn', roomID, 1)
     console.log('on discard', data, 'turn', turn)
     
     if (turn === 34) {
@@ -186,8 +225,16 @@ io.on('connection', (socket) => {
     console.log(data)
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
-    let dora = roomIDDoraMapper[roomID]
-    let uradora = roomIDUraDoraMapper[roomID]
+    let dora
+    let uradora
+    getHValue('dora', roomID).then((result) => {
+      dora = result
+    })
+    getHValue('uradora', roomID).then((result) => {
+      uradora = result
+    })
+    // let dora = roomIDDoraMapper[roomID]
+    // let uradora = roomIDUraDoraMapper[roomID]
 
     const { tiles, ronCard, oya, soon } = data
     console.log('tiles', tiles,'ronCard', ronCard)
@@ -221,12 +268,20 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    let roomID = socketIDRoomMapper[socket.id]
+    // let roomID = socketIDRoomMapper[socket.id]
+    let roomID
+    getHValue('roomID', socket.id).then((err, result) => {
+      err ? console.log(err) : roomID = result
+    })
     socket.to(roomID).broadcast.emit('playerLeft')
-    delete roomIDDoraMapper[roomID]
-    delete roomIDUraDoraMapper[roomID]
-    delete roomIDTurnMapper[roomID]
-    delete socketIDRoomMapper[socket.id]
+    // delete roomIDDoraMapper[roomID]
+    // delete roomIDUraDoraMapper[roomID]
+    // delete roomIDTurnMapper[roomID]
+    // delete socketIDRoomMapper[socket.id]
+    redisClient.hdel('dora', '123')
+    redisClient.hdel('uradora', '123')
+    redisClient.hdel('turn', '123')
+    redisClient.hdel('roomID', socket.id)
     console.log('user disconnected: ' + socket.id + '/ roomID: ' + roomID);
   });
 })  

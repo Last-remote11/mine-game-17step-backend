@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+
+  # backend
+  server:
+    container_name: mine-game-api
+    build: 
+      context: .
+      dockerfile: ./dockerfile
+    command: npm start
+    working_dir: /usr/src/app
+    environment: 
+      LC_ALL: en_US.UTF-8
+      LANG: en_US.UTF-8
+      REDIS_URL: redis://redis:6379
+    links:
+      - redis
+    ports: 
+      - "3000:3000"
+    volumes: 
+      - ./:/usr/src/app
+
+  # redis
+  redis:
+    container_name: mine-game-redis
+    image: redis
+    ports:
+      - "6378:6379"
