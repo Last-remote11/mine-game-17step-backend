@@ -1,14 +1,15 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-const bluebird = require('bluebird');
+const Promise = require('bluebird');
 const helmet = require('helmet');
 const redis = require("redis");
-bluebird.promisifyAll(redis.RedisClient.prototype);
+Promise.promisifyAll(require("redis"));
 const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
 
-const { checkYaku } = require('./CheckYaku')
 const { shuffle } = require('./functions')
+const { checkYaku } = require('./CheckYaku')
+
 const { calculatePoint } = require('./CalculatePoint')
 
 const app = express();
@@ -71,34 +72,54 @@ app.get('/', (req, res) => {
   res.send('it is working')
 } )
 
+
+const saveSocketRoomID = (socketID, roomID) => {
+  redisClient.hset('roomID', socketID, roomID, (err, reply) => {
+    reply ? console.log(reply, '방id저장완료') : console.log(err)
+  })
+}
+
+const isdraw = (turn) => {
+  if (turn === 34) {
+    console.log('유국')
+    return true
+  } else {
+    return false
+  }
+}
+
 const saveDora = (roomID, dora) => {
   redisClient.hset('dora', roomID, dora, (err, reply) => {
-    reply ? console.log(reply,'안에라') : console.log(err,'에라')
+    reply ? console.log(reply,'도라저장완료') : console.log(err,'에라')
   })
 }
 const saveUradora = (roomID, uradora) => {
   redisClient.hset('uradora', roomID, uradora, (err, reply) => {
-    reply ? console.log(reply) : console.log(err)
+    reply ? console.log(reply, '우라도라저장완료') : console.log(err)
   })
 }
 const saveTurn = (roomID, turn) => {
   redisClient.hset('turn', roomID, turn, (err, reply) => {
-    reply ? console.log(reply) : console.log(err)
-  })
-}
-const saveSocketRoomID = (socketID, roomID) => {
-  redisClient.hset('roomID', socketID, roomID, (err, reply) => {
-    reply ? console.log(reply) : console.log(err)
+    reply ? console.log(reply, '턴수저장완료') : console.log(err)
   })
 }
 
-const getHValue = (hash, key) => {
-  let value = redisClient.hgetAsync(hash, key).then((reply) => {
-    console.log(reply.toString(),'가나다라마바사')
-    return reply;
-  });
+const getHValue = async (hash, key) => {
+  let result = await redisClient.hgetallAsync(hash)
+  return Promise.resolve(result[key])
+  return redisClient.hgetallAsync(hash, (err, reply) => {
+    if (err || !reply) {
+      return err
+    }
+    console.log('redis에서 읽음', reply)
+    return reply.key
+  })
+  // let value = redisClient.hgetAsync(hash, key).then((reply) => {
+  //   console.log(reply.toString(),'가나다라마바사')
+  //   return reply;
+  // });
 
-  return Promise.all(value);
+//   return Promise.all(value);
 }
 
 const socketIDRoomMapper = {};
@@ -156,9 +177,6 @@ io.on('connection', (socket) => {
     saveDora(roomID, dora)
     saveUradora(roomID, uradora)
     saveTurn(roomID, 0)
-    roomIDDoraMapper[roomID] = dora
-    roomIDUraDoraMapper[roomID] = uradora
-    roomIDTurnMapper[roomID] = 0
   
     const playerHand1 = []
     for (let i=0; i < 34; i++) {
@@ -200,39 +218,33 @@ io.on('connection', (socket) => {
     socket.in(roomID).broadcast.emit('opponentDecide', data)
   })
 
-  socket.on('discard', (data) => {
+  socket.on('discard', async (data) => {
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
-    let turn
-    // let turn = roomIDTurnMapper[roomID]
-    getHValue('turn', roomID).then((result) => {
-      turn = result
-    })
-    // roomIDTurnMapper[roomID]++
-    redisClient.hincrby('turn', roomID, 1)
-    console.log('on discard', data, 'turn', turn)
-    
-    if (turn === 34) {
-      console.log('유국')
+    let turn = await getHValue('turn', roomID)
+    console.log('턴수??', turn)
+    // console.log('on discard', data, 'turn', turn)
+    // let draw = isdraw(turn)
+    redisClient.hincrby('turn', roomID.toString(), 1)
+    if (turn === '34') {
+      console.log('비김')
+      console.log(turn)
       io.in(roomID).emit('draw')
-    } else {
+     } 
+    if (turn < 34 ){
+      console.log('안비김')
+      console.log(typeof turn)
       socket.in(roomID).broadcast.emit('opponentDiscard', data);
-      console.log(data.order)
-    }
+     }
   })
 
-  socket.on('ron', (data) => {
-    console.log(data)
+  socket.on('ron', async (data) => {
+    console.log('론 정보', data)
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
-    let dora
-    let uradora
-    getHValue('dora', roomID).then((result) => {
-      dora = result
-    })
-    getHValue('uradora', roomID).then((result) => {
-      uradora = result
-    })
+    let dora = await getHValue('dora', roomID)
+    let uradora = await getHValue('uradora', roomID)
+
     // let dora = roomIDDoraMapper[roomID]
     // let uradora = roomIDUraDoraMapper[roomID]
 
@@ -269,10 +281,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     // let roomID = socketIDRoomMapper[socket.id]
-    let roomID
-    getHValue('roomID', socket.id).then((err, result) => {
-      err ? console.log(err) : roomID = result
-    })
+    let roomID = getHValue('roomID', socket.id)
     socket.to(roomID).broadcast.emit('playerLeft')
     // delete roomIDDoraMapper[roomID]
     // delete roomIDUraDoraMapper[roomID]
