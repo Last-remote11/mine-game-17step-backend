@@ -5,11 +5,9 @@ const Promise = require('bluebird');
 const helmet = require('helmet');
 const redis = require("redis");
 Promise.promisifyAll(require("redis"));
-const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
 
 const { shuffle } = require('./functions')
 const { checkYaku } = require('./CheckYaku')
-
 const { calculatePoint } = require('./CalculatePoint')
 
 const app = express();
@@ -20,13 +18,12 @@ const io = require('socket.io')(server,{
   }
 });
 
-
+const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
 
 app.use(cors());
 app.use(express.json()); 
 app.use(helmet())
 app.use(morgan('combined'))
-// tiny - 간단, combined - 좀 더 자세한 로그
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; 
 
@@ -79,15 +76,6 @@ const saveSocketRoomID = (socketID, roomID) => {
   })
 }
 
-const isdraw = (turn) => {
-  if (turn === 34) {
-    console.log('유국')
-    return true
-  } else {
-    return false
-  }
-}
-
 const saveDora = (roomID, dora) => {
   redisClient.hset('dora', roomID, dora, (err, reply) => {
     reply ? console.log(reply,'도라저장완료') : console.log(err,'에라')
@@ -107,26 +95,8 @@ const saveTurn = (roomID, turn) => {
 const getHValue = async (hash, key) => {
   let result = await redisClient.hgetallAsync(hash)
   return Promise.resolve(result[key])
-  return redisClient.hgetallAsync(hash, (err, reply) => {
-    if (err || !reply) {
-      return err
-    }
-    console.log('redis에서 읽음', reply)
-    return reply.key
-  })
-  // let value = redisClient.hgetAsync(hash, key).then((reply) => {
-  //   console.log(reply.toString(),'가나다라마바사')
-  //   return reply;
-  // });
-
-//   return Promise.all(value);
 }
 
-const socketIDRoomMapper = {};
-
-const roomIDDoraMapper = {};
-const roomIDUraDoraMapper = {};
-const roomIDTurnMapper = {};
 
 const checkRoomPeople = {
   '1': (roomID) => {
@@ -153,7 +123,6 @@ io.on('connection', (socket) => {
     roomID = parseInt(roomID)
     socket.join(roomID)
     saveSocketRoomID(socket.id, roomID)
-    // socketIDRoomMapper[socket.id] = roomID
     let number = io.sockets.adapter.rooms.get(roomID).size
     console.log('방ID : ', roomID, number)
 
@@ -168,7 +137,6 @@ io.on('connection', (socket) => {
 
   socket.on('login', (data) => {
     console.log('login, 방목록', socket.rooms)
-    console.log('방번호 도라', roomIDDoraMapper)
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
     const mountain = shuffle([...Database])
@@ -223,8 +191,6 @@ io.on('connection', (socket) => {
     let roomID = roomIDArr[roomIDArr.length-1]
     let turn = await getHValue('turn', roomID)
     console.log('턴수??', turn)
-    // console.log('on discard', data, 'turn', turn)
-    // let draw = isdraw(turn)
     redisClient.hincrby('turn', roomID.toString(), 1)
     if (turn === '34') {
       console.log('비김')
@@ -243,31 +209,26 @@ io.on('connection', (socket) => {
     let dora = await getHValue('dora', roomID)
     let uradora = await getHValue('uradora', roomID)
 
-    // let dora = roomIDDoraMapper[roomID]
-    // let uradora = roomIDUraDoraMapper[roomID]
 
     const { tiles, ronCard, oya, soon } = data
-    console.log('tiles', tiles,'ronCard', ronCard)
     const { 
       pan, 
       fu, 
       yakuman, 
       yakuNameArr, 
       uradoraCount } = checkYaku(tiles, ronCard, dora, uradora, oya, soon)
-    console.log(pan,'판', 
-      fu,'부', 
-      yakuman,'역만', 
-      yakuNameArr, 
-      uradoraCount,'도라갯수')
-      // 도라, 뒷도라 모두 카운트하지만 판수에 반영하는건 도라만
-      // 뒷도라 제외 만관이어야 하기 때문
+
     const point = calculatePoint(pan, fu, yakuman, uradoraCount)
-      // 만관 조건 체크(뒷도라제외), 점수계산(뒷도라포함)
+
     if (point != -8000) {
       yakuNameArr.push(`우라도라 ${uradoraCount}`)
-    } // 뒷도라제외 만관이상이면 역목록에추가
+    }
+
     tiles.sort((a, b) => a - b)
-    socket.to(roomID).broadcast.emit('lose', { pan, yakuman, point, yakuNameArr, tiles, uradora })
+
+    socket.to(roomID).broadcast.emit('lose',
+    { pan, yakuman, point, yakuNameArr, tiles, uradora })
+
     socket.emit('win', { pan, yakuman, point, yakuNameArr, tiles, uradora })
   })
   
@@ -278,13 +239,8 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    // let roomID = socketIDRoomMapper[socket.id]
     let roomID = getHValue('roomID', socket.id)
     socket.to(roomID).broadcast.emit('playerLeft')
-    // delete roomIDDoraMapper[roomID]
-    // delete roomIDUraDoraMapper[roomID]
-    // delete roomIDTurnMapper[roomID]
-    // delete socketIDRoomMapper[socket.id]
     redisClient.hdel('dora', '123')
     redisClient.hdel('uradora', '123')
     redisClient.hdel('turn', '123')
