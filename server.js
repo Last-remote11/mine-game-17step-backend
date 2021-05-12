@@ -230,10 +230,8 @@ io.on('connection', (socket) => {
       console.log('비김')
       console.log(turn)
       io.in(roomID).emit('draw')
-     } 
-    if (turn < 34 ){
+     } else {
       console.log('안비김')
-      console.log(typeof turn)
       socket.in(roomID).broadcast.emit('opponentDiscard', data);
      }
   })
