@@ -19,6 +19,7 @@ const io = require('socket.io')(server,{
 });
 
 const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
+// const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
 
 app.use(cors());
 app.use(express.json()); 
