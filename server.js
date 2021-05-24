@@ -4,6 +4,8 @@ const cors = require('cors');
 const Promise = require('bluebird');
 const helmet = require('helmet');
 const redis = require("redis");
+const bcrypt = require('bcryptjs');
+const knex = require('knex');
 Promise.promisifyAll(require("redis"));
 
 const { shuffle } = require('./functions')
@@ -20,6 +22,31 @@ const io = require('socket.io')(server,{
 
 const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
 // const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
+
+// heroku 연결할때
+// const db = knex({
+//   client: 'pg',
+//   connection: {
+//     connectionString : process.env.DATABASE_URL,
+//     ssl : true
+//   }
+// });
+
+const db = knex({
+  client: 'pg',
+  connection: {
+    host: process.env.POSTGRES_HOST,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    database: process.env.POSTGRES_DB
+  }
+});
+
+const { signup } = require('./controller/signup')
+const { login } = require('./controller/login')
+const { authByToken } = require('./controller/authByToken')
+const duplicate = require('./controller/duplicate')
+
 
 app.use(cors());
 app.use(express.json()); 
@@ -68,8 +95,13 @@ const Database = [
 
 app.get('/', (req, res) => {
   res.send('it is working')
-} )
+})
 
+app.post('/login', (req, res) => { login(req, res, db, bcrypt) })
+
+app.post('/signup', (req, res) => { signup(req, res, db, bcrypt) })
+
+app.post('/authByToken', (req, res) => { authByToken(req, res, redisClient) })
 
 const saveSocketRoomID = (socketID, roomID) => {
   redisClient.hset('roomID', socketID, roomID, (err, reply) => {

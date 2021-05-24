@@ -14,12 +14,29 @@ services:
       LC_ALL: en_US.UTF-8
       LANG: en_US.UTF-8
       REDIS_URL: redis://redis:6379
+      POSTGRES_USER: peko
+      POSTGRES_PASSWORD: miko
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: mine-game-docker
     links:
       - redis
     ports: 
       - "3000:3000"
     volumes: 
       - ./:/usr/src/app
+
+  # postgres
+  postgres:
+    build: ./postgres
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_USER: peko
+      POSTGRES_PASSWORD: miko
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: mine-game-docker
+      LC_ALL: en_US.UTF-8
+      LANG: en_US.UTF-8
 
   # redis
   redis:
