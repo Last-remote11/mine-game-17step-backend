@@ -101,7 +101,7 @@ app.post('/login', (req, res) => { login(req, res, db, bcrypt) })
 
 app.post('/signup', (req, res) => { signup(req, res, db, bcrypt) })
 
-app.post('/authByToken', (req, res) => { authByToken(req, res, redisClient) })
+app.get('/authByToken', (req, res) => { authByToken(req, res, redisClient) })
 
 const saveSocketRoomID = (socketID, roomID) => {
   redisClient.hset('roomID', socketID, roomID, (err, reply) => {
@@ -208,8 +208,10 @@ io.on('connection', (socket) => {
   
 
   socket.on('forceDisconnect', () => {
+    let roomIDArr = [...socket.rooms]
+    let roomID = roomIDArr[roomIDArr.length-1]
     socket.disconnect();
-    socket.emit('forceDisconnect', 'disconnected')
+    socket.in(roomID).broadcast.emit('forceDisconnect', 'disconnected')
   })
 
   socket.on('decide', (data) => {

@@ -1,8 +1,8 @@
 const authByToken = async (req, res, redisClient) => {
 
-  const { token } = req.body
+  const { authorization } = req.headers
 
-  return redisClient.hget('token', token, (err, reply) => {
+  return redisClient.hget('token', authorization, (err, reply) => {
     if (err || !reply) {
       return res.status(400).json('토큰 만료')
     }
