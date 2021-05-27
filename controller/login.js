@@ -57,6 +57,7 @@ const signToken = (userdata) => {
 const setToken = async (key, value) => {
   redisClient.hset('token', key, value, (err, reply) => {
     if (!reply || err) {
+      console.log(err)
       throw Error('토큰 저장하는 중 오류 발생')
     }
   })

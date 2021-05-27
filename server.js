@@ -20,6 +20,7 @@ const io = require('socket.io')(server,{
   }
 });
 
+
 const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
 // const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
 
@@ -109,16 +110,20 @@ const saveSocketRoomID = (socketID, roomID) => {
   })
 }
 
+const roomIDNameMapper = {}
+
 const saveDora = (roomID, dora) => {
   redisClient.hset('dora', roomID, dora, (err, reply) => {
     reply ? console.log(reply,'도라저장완료') : console.log(err,'에라')
   })
 }
+
 const saveUradora = (roomID, uradora) => {
   redisClient.hset('uradora', roomID, uradora, (err, reply) => {
     reply ? console.log(reply, '우라도라저장완료') : console.log(err)
   })
 }
+
 const saveTurn = (roomID, turn) => {
   redisClient.hset('turn', roomID, turn, (err, reply) => {
     reply ? console.log(reply, '턴수저장완료') : console.log(err)
@@ -127,17 +132,22 @@ const saveTurn = (roomID, turn) => {
 
 const getHValue = async (hash, key) => {
   let result = await redisClient.hgetallAsync(hash)
-  return Promise.resolve(result[key])
+  return result[key]
 }
 
 
 const checkRoomPeople = {
-  '1': (roomID) => {
+
+  '1': (roomID, joinData) => {
+    roomIDNameMapper[roomID] = joinData.name
     io.in(roomID).emit('oneUser')
     console.log('emit ONEUSER')
   },
-  '2': (roomID) => {
-    io.in(roomID).emit('twoUser', roomID)
+  '2': (roomID, joinData) => {
+    let user1 = roomIDNameMapper[roomID]
+    console.log('tworoom', joinData)
+    let user2 = joinData.name
+    io.in(roomID).emit('twoUser', { roomID, user1, user2 })
     console.log('emit TWOROOM')
   },
   '3': () => {
@@ -151,15 +161,15 @@ io.on('connection', (socket) => {
   console.log(socket.id, ' 연결됨')
   socket.emit('connected', socket.id)
   
-  
-  socket.on('joinroom', (roomID) => {
-    roomID = parseInt(roomID)
+  socket.on('joinroom', (joinData) => {
+    console.log(joinData)
+    roomID = parseInt(joinData.joinID)
     socket.join(roomID)
     saveSocketRoomID(socket.id, roomID)
-    let number = io.sockets.adapter.rooms.get(roomID).size
-    console.log('방ID : ', roomID, number)
+    let roomSize = io.sockets.adapter.rooms.get(roomID).size
+    console.log('방ID : ', roomID, roomSize)
 
-    checkRoomPeople[number](roomID)
+    checkRoomPeople[roomSize](roomID, joinData)
   })
 
 
@@ -273,14 +283,14 @@ io.on('connection', (socket) => {
     socket.to(roomID).broadcast.emit('opponentAccept')
   })
 
-  socket.on('disconnect', () => {
-    let roomID = getHValue('roomID', socket.id)
+  socket.on('disconnect', async () => {
+    let roomID = await getHValue('roomID', socket.id)
     socket.to(roomID).broadcast.emit('playerLeft')
     redisClient.hdel('dora', '123')
     redisClient.hdel('uradora', '123')
     redisClient.hdel('turn', '123')
     redisClient.hdel('roomID', socket.id)
-    console.log('user disconnected: ' + socket.id + '/ roomID: ' + roomID);
+    console.log('user disconnected: ' + socket.id + ' / roomID: ' + roomID);
   });
 })  
 
