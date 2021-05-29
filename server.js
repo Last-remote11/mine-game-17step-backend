@@ -221,7 +221,7 @@ io.on('connection', (socket) => {
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
     socket.disconnect();
-    socket.in(roomID).broadcast.emit('forceDisconnect', 'disconnected')
+    socket.in(roomID).broadcast.emit('forceDisconnect', '상대방이 게임을 떠났습니다.')
   })
 
   socket.on('decide', (data) => {
