@@ -25,23 +25,24 @@ const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_UR
 // const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
 
 // heroku 연결할때
-// const db = knex({
-//   client: 'pg',
-//   connection: {
-//     connectionString : process.env.DATABASE_URL,
-//     ssl : true
-//   }
-// });
-
 const db = knex({
   client: 'pg',
   connection: {
-    host: process.env.POSTGRES_HOST,
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DB
+    connectionString : process.env.DATABASE_URL,
+    ssl : true
   }
 });
+
+// docker-compose
+// const db = knex({
+//   client: 'pg',
+//   connection: {
+//     host: process.env.POSTGRES_HOST,
+//     user: process.env.POSTGRES_USER,
+//     password: process.env.POSTGRES_PASSWORD,
+//     database: process.env.POSTGRES_DB
+//   }
+// });
 
 const { signup } = require('./controller/signup')
 const { login } = require('./controller/login')
