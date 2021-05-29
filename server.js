@@ -16,7 +16,7 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server,{
   cors: {
-    origin: '*',
+    origin: 'https://last-remote11.github.io',
   }
 });
 
@@ -51,6 +51,10 @@ const duplicate = require('./controller/duplicate')
 
 
 app.use(cors());
+
+const corsOptions = {
+  origin: 'https://last-remote11.github.io'
+}
 app.use(express.json()); 
 app.use(helmet())
 app.use(morgan('combined'))
@@ -99,11 +103,11 @@ app.get('/', (req, res) => {
   res.send('it is working')
 })
 
-app.post('/login', (req, res) => { login(req, res, db, bcrypt) })
+app.post('/login', cors(corsOptions), (req, res) => { login(req, res, db, bcrypt) })
 
-app.post('/signup', (req, res) => { signup(req, res, db, bcrypt) })
+app.post('/signup', cors(corsOptions), (req, res) => { signup(req, res, db, bcrypt) })
 
-app.get('/authByToken', (req, res) => { authByToken(req, res, redisClient) })
+app.get('/authByToken', cors(corsOptions), (req, res) => { authByToken(req, res, redisClient) })
 
 const saveSocketRoomID = (socketID, roomID) => {
   redisClient.hset('roomID', socketID, roomID, (err, reply) => {
