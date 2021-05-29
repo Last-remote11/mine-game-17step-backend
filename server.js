@@ -21,8 +21,9 @@ const io = require('socket.io')(server,{
 });
 
 
+const redisClient = redis.createClient(process.env.REDIS_URL);
 // const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
-const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
+// const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URI});
 
 // heroku 연결할때
 const db = knex({
