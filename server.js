@@ -20,35 +20,32 @@ const io = require('socket.io')(server,{
   }
 });
 
-const redisClient
-const db
 
-if (process.env.POSTGRES_HOST) {
-  // docker-compose
-  redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
+// docker-compose
+const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
 
-  docker-compose
-  db = knex({
-    client: 'pg',
-    connection: {
-      host: process.env.POSTGRES_HOST,
-      user: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB
-    }
-  });
-} else {
-  // heroku
-  redisClient = redis.createClient(process.env.REDIS_URL);
-  
-  db = knex({
-    client: 'pg',
-    connection: {
-      connectionString : process.env.DATABASE_URL,
-      ssl : true
-    }
-  });
-}
+docker-compose
+const db = knex({
+  client: 'pg',
+  connection: {
+    host: process.env.POSTGRES_HOST,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    database: process.env.POSTGRES_DB
+  }
+});
+
+// // heroku
+// redisClient = redis.createClient(process.env.REDIS_URL);
+
+// db = knex({
+//   client: 'pg',
+//   connection: {
+//     connectionString : process.env.DATABASE_URL,
+//     ssl : true
+//   }
+// });
+
 
 
 const { signup } = require('./controller/signup')
@@ -60,7 +57,7 @@ const duplicate = require('./controller/duplicate')
 app.use(cors());
 
 const corsOptions = {
-  origin: 'https://last-remote11.github.io'
+  origin: ['https://last-remote11.github.io', 'http://localhost:3001', 'http://localhost:3002']
 }
 app.use(express.json()); 
 app.use(helmet())
