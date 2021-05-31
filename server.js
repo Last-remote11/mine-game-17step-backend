@@ -60,7 +60,7 @@ const duplicate = require('./controller/duplicate')
 app.use(cors());
 
 const corsOptions = {
-  origin: ['https://last-remote11.github.io', 'http://localhost:3001', 'http://localhost:3002']
+  origin: 'https://last-remote11.github.io'
 }
 app.use(express.json()); 
 app.use(helmet())
