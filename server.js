@@ -21,30 +21,30 @@ const io = require('socket.io')(server,{
 });
 
 
+// // docker-compose
+// const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
+
 // docker-compose
-const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
-
-docker-compose
-const db = knex({
-  client: 'pg',
-  connection: {
-    host: process.env.POSTGRES_HOST,
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DB
-  }
-});
-
-// // heroku
-// redisClient = redis.createClient(process.env.REDIS_URL);
-
-// db = knex({
+// const db = knex({
 //   client: 'pg',
 //   connection: {
-//     connectionString : process.env.DATABASE_URL,
-//     ssl : true
+//     host: process.env.POSTGRES_HOST,
+//     user: process.env.POSTGRES_USER,
+//     password: process.env.POSTGRES_PASSWORD,
+//     database: process.env.POSTGRES_DB
 //   }
 // });
+
+// heroku
+redisClient = redis.createClient(process.env.REDIS_URL);
+
+db = knex({
+  client: 'pg',
+  connection: {
+    connectionString : process.env.DATABASE_URL,
+    ssl : true
+  }
+});
 
 
 
