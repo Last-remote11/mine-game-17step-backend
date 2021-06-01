@@ -113,6 +113,11 @@ app.post('/signup', cors(corsOptions), (req, res) => { signup(req, res, db, bcry
 
 app.get('/authByToken', cors(corsOptions), (req, res) => { authByToken(req, res, redisClient) })
 
+const saveSocketRoomID = (socketID, roomID) => {
+  redisClient.hset('roomID', socketID, roomID, (err, reply) => {
+    reply ? console.log(reply, '방id저장완료') : console.log(err)
+  })
+}
 
 const roomIDNameMapper = {}
 
@@ -136,7 +141,7 @@ const saveTurn = (roomID, turn) => {
 
 const getHValue = async (hash, key) => {
   let result = await redisClient.hgetallAsync(hash)
-  return result
+  return result[key]
 }
 
 
@@ -169,6 +174,7 @@ io.on('connection', (socket) => {
     console.log(joinData)
     roomID = parseInt(joinData.joinID)
     socket.join(roomID)
+    saveSocketRoomID(socket.id, roomID)
     let roomSize = io.sockets.adapter.rooms.get(roomID).size
     console.log('방ID : ', roomID, roomSize)
 
@@ -287,8 +293,9 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', async () => {
-    let roomIDArr = [...socket.rooms]
-    let roomID = roomIDArr[roomIDArr.length-1]
+    let roomID = await getHValue('roomID', socket.id)
+    roomID = Number(roomID)
+    console.log('방번호', roomID)
     socket.to(roomID).broadcast.emit('playerLeft')
     redisClient.hdel('dora', '123')
     redisClient.hdel('uradora', '123')
