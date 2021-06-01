@@ -14,37 +14,39 @@ const { calculatePoint } = require('./CalculatePoint')
 
 const app = express();
 const server = require('http').createServer(app);
+
+const corsOptions = {
+  origin: ['https://last-remote11.github.io', 'http://localhost:3001', 'http://localhost:3002']
+}
+
 const io = require('socket.io')(server,{
-  cors: {
-    origin: 'https://last-remote11.github.io',
-  }
+  cors: corsOptions
 });
 
-
-// // docker-compose
-// const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
 
 // docker-compose
-// const db = knex({
-//   client: 'pg',
-//   connection: {
-//     host: process.env.POSTGRES_HOST,
-//     user: process.env.POSTGRES_USER,
-//     password: process.env.POSTGRES_PASSWORD,
-//     database: process.env.POSTGRES_DB
-//   }
-// });
+const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
 
-// heroku
-redisClient = redis.createClient(process.env.REDIS_URL);
-
-db = knex({
+const db = knex({
   client: 'pg',
   connection: {
-    connectionString : process.env.DATABASE_URL,
-    ssl : true
+    host: process.env.POSTGRES_HOST,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    database: process.env.POSTGRES_DB
   }
 });
+
+// // heroku
+// redisClient = redis.createClient(process.env.REDIS_URL);
+
+// db = knex({
+//   client: 'pg',
+//   connection: {
+//     connectionString : process.env.DATABASE_URL,
+//     ssl : true
+//   }
+// });
 
 
 
@@ -56,9 +58,7 @@ const duplicate = require('./controller/duplicate')
 
 app.use(cors());
 
-const corsOptions = {
-  origin: ['https://last-remote11.github.io', 'http://localhost:3001', 'http://localhost:3002']
-}
+
 app.use(express.json()); 
 app.use(helmet())
 app.use(morgan('combined'))
@@ -113,11 +113,6 @@ app.post('/signup', cors(corsOptions), (req, res) => { signup(req, res, db, bcry
 
 app.get('/authByToken', cors(corsOptions), (req, res) => { authByToken(req, res, redisClient) })
 
-const saveSocketRoomID = (socketID, roomID) => {
-  redisClient.hset('roomID', socketID, roomID, (err, reply) => {
-    reply ? console.log(reply, '방id저장완료') : console.log(err)
-  })
-}
 
 const roomIDNameMapper = {}
 
@@ -141,7 +136,7 @@ const saveTurn = (roomID, turn) => {
 
 const getHValue = async (hash, key) => {
   let result = await redisClient.hgetallAsync(hash)
-  return result[key]
+  return result
 }
 
 
@@ -174,7 +169,6 @@ io.on('connection', (socket) => {
     console.log(joinData)
     roomID = parseInt(joinData.joinID)
     socket.join(roomID)
-    saveSocketRoomID(socket.id, roomID)
     let roomSize = io.sockets.adapter.rooms.get(roomID).size
     console.log('방ID : ', roomID, roomSize)
 
@@ -293,7 +287,8 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', async () => {
-    let roomID = await getHValue('roomID', socket.id)
+    let roomIDArr = [...socket.rooms]
+    let roomID = roomIDArr[roomIDArr.length-1]
     socket.to(roomID).broadcast.emit('playerLeft')
     redisClient.hdel('dora', '123')
     redisClient.hdel('uradora', '123')
