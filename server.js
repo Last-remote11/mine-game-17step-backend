@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs');
 const knex = require('knex');
 Promise.promisifyAll(require("redis"));
 
-const { shuffle } = require('./functions')
+const { shuffle, leaveAllRoom } = require('./functions')
 const { checkYaku } = require('./CheckYaku')
 const { calculatePoint } = require('./CalculatePoint')
 
@@ -24,36 +24,36 @@ const io = require('socket.io')(server,{
 });
 
 
-// docker-compose
-const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
+// // docker-compose
+// const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
 
-const db = knex({
-  client: 'pg',
-  connection: {
-    host: process.env.POSTGRES_HOST,
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DB
-  }
-});
-
-// // heroku
-// redisClient = redis.createClient(process.env.REDIS_URL);
-
-// db = knex({
+// const db = knex({
 //   client: 'pg',
 //   connection: {
-//     connectionString : process.env.DATABASE_URL,
-//     ssl : true
+//     host: process.env.POSTGRES_HOST,
+//     user: process.env.POSTGRES_USER,
+//     password: process.env.POSTGRES_PASSWORD,
+//     database: process.env.POSTGRES_DB
 //   }
 // });
+
+// heroku
+redisClient = redis.createClient(process.env.REDIS_URL);
+
+db = knex({
+  client: 'pg',
+  connection: {
+    connectionString : process.env.DATABASE_URL,
+    ssl : true
+  }
+});
 
 
 
 const { signup } = require('./controller/signup')
 const { login } = require('./controller/login')
 const { authByToken } = require('./controller/authByToken')
-const duplicate = require('./controller/duplicate')
+const duplicate = require('./controller/duplicate') // 닉중복확인용, 미구현
 
 
 app.use(cors());
@@ -113,33 +113,36 @@ app.post('/signup', cors(corsOptions), (req, res) => { signup(req, res, db, bcry
 
 app.get('/authByToken', cors(corsOptions), (req, res) => { authByToken(req, res, redisClient) })
 
-const saveSocketRoomID = (socketID, roomID) => {
+
+const roomIDNameMapper = {}
+const currentRoomState = new Set() // 활성화된 방
+const randomRoomID = Math.floor(Math.random()*100000)
+
+const saveSocketRoomID = (socketID, roomID) => { // key: 소켓id value: 방번호(id)
   redisClient.hset('roomID', socketID, roomID, (err, reply) => {
     reply ? console.log(reply, '방id저장완료') : console.log(err)
   })
-}
+} 
 
-const roomIDNameMapper = {}
-
-const saveDora = (roomID, dora) => {
+const saveDora = (roomID, dora) => { // key: 방번호 value: 도라번호
   redisClient.hset('dora', roomID, dora, (err, reply) => {
     reply ? console.log(reply,'도라저장완료') : console.log(err,'에라')
   })
-}
+} 
 
-const saveUradora = (roomID, uradora) => {
+const saveUradora = (roomID, uradora) => { // key: 방번호 value: 뒷도라번호
   redisClient.hset('uradora', roomID, uradora, (err, reply) => {
     reply ? console.log(reply, '우라도라저장완료') : console.log(err)
   })
-}
+} 
 
-const saveTurn = (roomID, turn) => {
+const saveTurn = (roomID, turn) => { // key: 방번호 value: 턴수
   redisClient.hset('turn', roomID, turn, (err, reply) => {
     reply ? console.log(reply, '턴수저장완료') : console.log(err)
   })
 }
 
-const getHValue = async (hash, key) => {
+const getHValue = async (hash, key) => { 
   let result = await redisClient.hgetallAsync(hash)
   return result[key]
 }
@@ -157,6 +160,7 @@ const checkRoomPeople = {
     console.log('tworoom', joinData)
     let user2 = joinData.name
     io.in(roomID).emit('twoUser', { roomID, user1, user2 })
+    currentRoomState.add(roomID)
     console.log('emit TWOROOM')
   },
   '3': () => {
@@ -173,6 +177,7 @@ io.on('connection', (socket) => {
   socket.on('joinroom', (joinData) => {
     console.log(joinData)
     roomID = parseInt(joinData.joinID)
+    leaveAllRoom(socket)
     socket.join(roomID)
     saveSocketRoomID(socket.id, roomID)
     let roomSize = io.sockets.adapter.rooms.get(roomID).size
@@ -181,9 +186,19 @@ io.on('connection', (socket) => {
     checkRoomPeople[roomSize](roomID, joinData)
   })
 
-
-  socket.on('randomMatch', () => {
+  socket.on('randomMatch', (joinData) => {
     console.log('randomMatch!')
+    let whereToGo = 1
+    while (currentRoomState.has(whereToGo)) {
+      whereToGo++
+    }
+    leaveAllRoom(socket)
+    socket.join(whereToGo)
+    saveSocketRoomID(socket.id, whereToGo)
+    let roomSize = io.sockets.adapter.rooms.get(whereToGo).size
+    console.log('랜덤매치 방ID : ', whereToGo, roomSize)
+
+    checkRoomPeople[roomSize](whereToGo, joinData)
   })
 
 
@@ -235,6 +250,7 @@ io.on('connection', (socket) => {
 
   socket.on('decide', (data) => {
     let roomIDArr = [...socket.rooms]
+    console.log(socket.rooms)
     let roomID = roomIDArr[roomIDArr.length-1]
     console.log('emit decide')
     socket.in(roomID).broadcast.emit('opponentDecide', data)
@@ -301,6 +317,7 @@ io.on('connection', (socket) => {
     redisClient.hdel('uradora', '123')
     redisClient.hdel('turn', '123')
     redisClient.hdel('roomID', socket.id)
+    currentRoomState.delete(roomID)
     console.log('user disconnected: ' + socket.id + ' / roomID: ' + roomID);
   });
 })  

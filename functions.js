@@ -10,4 +10,12 @@ const shuffle = (array) => {
   return array;
 }
 
-module.exports = { shuffle }
+const leaveAllRoom = (socket) => {
+  rooms = socket.rooms
+  rooms.forEach(room => {
+    if (typeof(room) == "number")
+    socket.leave(room)
+  })
+}
+
+module.exports = { shuffle, leaveAllRoom }
