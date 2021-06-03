@@ -291,6 +291,7 @@ io.on('connection', (socket) => {
     const point = calculatePoint(pan, fu, yakuman, uradoraCount)
 
     if (point != -8000) {
+      pan += uradoraCount
       yakuNameArr.push(`우라도라 ${uradoraCount}`)
     }
 
