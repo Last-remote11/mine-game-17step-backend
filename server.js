@@ -289,18 +289,18 @@ io.on('connection', (socket) => {
       uradoraCount } = checkYaku(tiles, ronCard, dora, uradora, oya, soon)
 
     const point = calculatePoint(pan, fu, yakuman, uradoraCount)
-
+    panWithUradora = pan
     if (point != -8000) {
-      pan += uradoraCount
+      panWithUradora = pan + uradoraCount
       yakuNameArr.push(`우라도라 ${uradoraCount}`)
     }
 
     tiles.sort((a, b) => a - b)
 
     socket.to(roomID).broadcast.emit('lose',
-    { pan, yakuman, point, yakuNameArr, tiles, uradora })
+    { panWithUradora, yakuman, point, yakuNameArr, tiles, uradora })
 
-    socket.emit('win', { pan, yakuman, point, yakuNameArr, tiles, uradora })
+    socket.emit('win', { panWithUradora, yakuman, point, yakuNameArr, tiles, uradora })
   })
   
   socket.on('accept', () => {
