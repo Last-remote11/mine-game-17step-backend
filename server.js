@@ -289,7 +289,7 @@ io.on('connection', (socket) => {
       uradoraCount } = checkYaku(tiles, ronCard, dora, uradora, oya, soon)
 
     const point = calculatePoint(pan, fu, yakuman, uradoraCount)
-    panWithUradora = pan
+    let panWithUradora = pan
     if (point != -8000) {
       panWithUradora = pan + uradoraCount
       yakuNameArr.push(`우라도라 ${uradoraCount}`)
