@@ -69,7 +69,7 @@ const dfs = (tilesCopy, queue, depth, chis=[], pons=[],heads=[]) => {
       for (i of queue.concat([decom])) {
         var {tilesCopy, chis, pons, heads} = i(tilesCopy, chis, pons, heads)
       }
-      if (chis.length + pons.length + heads.length === 5) { // decompose 성공
+      if (chis.length + pons.length + heads.length === 5 && heads.length === 1) { // decompose 성공
         return { tilesCopy, heads, chis, pons }
       } else {
         tilesCopy = initialTiles
@@ -94,7 +94,7 @@ const decomposeRegular = (tiles) => {
 
   try {
     var { tilesCopy, chis, pons, heads } = dfs(tilesCopy, [], 0)
-  } catch {
+  } catch(e) {
     var tilesCopy = 'cannot decompose'
     var heads = []
   }
