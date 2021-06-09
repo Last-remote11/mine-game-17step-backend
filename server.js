@@ -115,6 +115,7 @@ app.get('/authByToken', cors(corsOptions), (req, res) => { authByToken(req, res,
 
 
 const roomIDNameMapper = {}
+const roomIsStarted = {}
 const currentRoomState = new Set() // 활성화된 방
 const randomRoomID = Math.floor(Math.random()*100000)
 
@@ -206,38 +207,42 @@ io.on('connection', (socket) => {
     console.log('login, 방목록', socket.rooms)
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
-    const mountain = shuffle([...Database])
-    const dora = mountain.pop()
-    const uradora = mountain.pop()
-    saveDora(roomID, dora)
-    saveUradora(roomID, uradora)
-    saveTurn(roomID, 0)
-  
-    const playerHand1 = []
-    for (let i=0; i < 34; i++) {
-      playerHand1.push(mountain.pop())
-    }
-  
-    const playerHand2 = []
-    for (let i=0; i < 34; i++) {
-      playerHand2.push(mountain.pop())
-    }
-    console.log('셔플')
+    roomIsStarted[roomID] = true
+    if (!roomIsStarted[roomID]) {
+      
+      const mountain = shuffle([...Database])
+      const dora = mountain.pop()
+      const uradora = mountain.pop()
+      saveDora(roomID, dora)
+      saveUradora(roomID, uradora)
+      saveTurn(roomID, 0)
     
-    socket.name = data.name
-  
-    socket.emit('login', {
-      playerHand: playerHand1,
-      dora: dora,
-      myTurn: true
-    })
-  
-    socket.in(roomID).broadcast.emit('login', {
-      playerHand: playerHand2,
-      dora: dora,
-      myTurn: false
-    })
-    console.log('배패')
+      const playerHand1 = []
+      for (let i=0; i < 34; i++) {
+        playerHand1.push(mountain.pop())
+      }
+    
+      const playerHand2 = []
+      for (let i=0; i < 34; i++) {
+        playerHand2.push(mountain.pop())
+      }
+      console.log('셔플')
+      
+      socket.name = data.name
+    
+      socket.emit('login', {
+        playerHand: playerHand1,
+        dora: dora,
+        myTurn: true
+      })
+    
+      socket.in(roomID).broadcast.emit('login', {
+        playerHand: playerHand2,
+        dora: dora,
+        myTurn: false
+      })
+      console.log('배패')
+    }
   })
   
 
@@ -252,6 +257,7 @@ io.on('connection', (socket) => {
     let roomIDArr = [...socket.rooms]
     console.log(socket.rooms)
     let roomID = roomIDArr[roomIDArr.length-1]
+    roomIsStarted[roomID] = false
     console.log('emit decide')
     socket.in(roomID).broadcast.emit('opponentDecide', data)
   })
