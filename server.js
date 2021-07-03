@@ -207,9 +207,9 @@ io.on('connection', (socket) => {
     console.log('login, 방목록', socket.rooms)
     let roomIDArr = [...socket.rooms]
     let roomID = roomIDArr[roomIDArr.length-1]
-    roomIsStarted[roomID] = true
+    
     if (!roomIsStarted[roomID]) {
-      
+      roomIsStarted[roomID] = true
       const mountain = shuffle([...Database])
       const dora = mountain.pop()
       const uradora = mountain.pop()
