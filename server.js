@@ -25,7 +25,7 @@ const io = require('socket.io')(server,{
 
 
 // docker-compose
-const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
+// const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_URL});
 
 // const db = knex({
 //   client: 'pg',
@@ -37,8 +37,8 @@ const redisClient = redis.createClient({host: 'redis', url: process.env.REDIS_UR
 //   }
 // });
 
-// // heroku
-// redisClient = redis.createClient(process.env.REDIS_URL);
+// heroku
+redisClient = redis.createClient(process.env.REDIS_URL);
 
 db = knex({
   client: 'pg',
