@@ -38,7 +38,7 @@ const io = require('socket.io')(server,{
 // });
 
 // heroku
-redisClient = redis.createClient(process.env.REDIS_URL);
+const redisClient = redis.createClient(process.env.REDIS_URL);
 
 db = knex({
   client: 'pg',
