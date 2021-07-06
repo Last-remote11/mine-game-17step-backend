@@ -26,6 +26,7 @@ const loginNotToken = async (name, password, db, bcrypt) => {
   if (userdata.length === 0) {
     throw Error('가입된 정보 없음')
   }
+  
   let isValid = await bcrypt.compare(password, userdata[0].hash)
   if (isValid) {
     let jwt = signToken(userdata)
@@ -35,17 +36,6 @@ const loginNotToken = async (name, password, db, bcrypt) => {
   } else {
     throw Error('비밀번호 틀림')
   }
-  // return db.select('*').from('users')
-  //   .where('name', '=', name)
-  //   .then(data => {
-  //     const isValid = bcrypt.compareSync(password, data[0].hash)
-  //     if (isValid) {
-  //       return data
-  //     } else {
-  //       Promise.reject("비밀번호 틀림")
-  //     }
-  //   })
-  //   .
 }
 
 const signToken = (userdata) => {
