@@ -47,7 +47,7 @@ const YAKU = {
   'honroto': 2,
   'honitsu': 3,
   'chinitsu': 6,
-  'toitoi': 2, // 울기가 없으므로 없다?
+  'toitoi': 2,
   'sananko': 2, 
   'shosangen': 2, 
   'daisangen': 13, 
