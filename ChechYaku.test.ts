@@ -1,9 +1,9 @@
-const { checkYaku } = require('./CheckYaku')
-// const { calculatePoint } = require('./CalculatePoint')
-// const { decomposeRegular } = require('./decomposeRegular')
+import { checkYaku } from './CheckYaku';
+// import { calculatePoint } from './CalculatePoint';
+// import { decomposeRegular } from './decomposeRegular';
 
-const pinfu = (heads, chis, ronCard) => {
-  var chisTail = chis.map(e => e+2)
+const pinfu = (heads: number[], chis: number[], ronCard: number): string | null => {
+  var chisTail = chis.map(e => e+2);
   // var chisNum = [...new Set (chis.map(e => e % 10))]
 
   if ( // 변짱
@@ -14,19 +14,19 @@ const pinfu = (heads, chis, ronCard) => {
     chis.includes(21) && !chis.includes(23) && ronCard === 23 ||
     chis.includes(27) && !chis.includes(25) && ronCard === 27
   ) {
-    return null
+    return null;
   }
-  
-  var twoSide = chis.concat(chisTail) // 양면확인용
+
+  var twoSide = chis.concat(chisTail); // 양면확인용
   if (chis.length === 4 && twoSide.includes(ronCard)) {
       // !chis.some((chi) => [ronCard].includes(chi+1)) && // 간짱
       // heads[0] !== ronCard
       // ||
-      // heads[0] === ronCard && 
-    return 'pinfu'
+      // heads[0] === ronCard &&
+    return 'pinfu';
   }
-  return null
-}
+  return null;
+};
 
 
 
@@ -35,8 +35,8 @@ test('혼노두', () => {
   .toStrictEqual({
     pan: 5,
     fu: 0,
-    yakuman: 0, 
-    yakuNameArr: ['혼노두','산안커(삼암각)'], 
+    yakuman: 0,
+    yakuNameArr: ['혼노두','산안커(삼암각)'],
     uradoraCount: 0
-  })
-})
+  });
+});
